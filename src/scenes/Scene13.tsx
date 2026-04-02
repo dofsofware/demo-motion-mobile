@@ -1,5 +1,6 @@
 import {
   Easing,
+  Img,
   interpolate,
   staticFile,
   useCurrentFrame,
@@ -23,11 +24,12 @@ const pulseValue = (time: number, duration: number, phase = 0) =>
 
 export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const time = frame / fps;
   const duration = outFrame - inFrame;
 
-  // Crossfade logic
+  // Crossfade
   const tIn = Math.max(0, Math.min(1, frame / crossfadeFrames));
   const tOut = Math.max(0, Math.min(1, (duration - frame) / crossfadeFrames));
   const opacity = Math.min(tIn, tOut);
@@ -35,12 +37,13 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const outZoom = interpolate(
     frame,
     [duration - crossfadeFrames, duration],
-    [1, 1.06],
+    [1, 1.05],
     clamp
   );
 
-  // ---------- Background elements (identical to previous scenes) ----------
-  const gridOffset = (time / 18) * 140;
+  // ---------- Background elements responsives ----------
+  const gridSize = isPortrait ? 96 : 140;
+  const gridOffset = (time / 18) * gridSize;
 
   const orb1Progress = pulseValue(time, 22);
   const orb2Progress = pulseValue(time, 26, 3);
@@ -62,11 +65,11 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   );
 
   const sparks = [
-    { top: "20%", left: "15%", size: 10, delay: 0 },
-    { top: "65%", left: "85%", size: 6, delay: 0.7 },
-    { top: "80%", left: "30%", size: 8, delay: 1.2 },
-    { top: "40%", left: "72%", size: 6, delay: 0.3 },
-    { top: "15%", left: "88%", size: 6, delay: 1.8 },
+    { top: "20%", left: "15%", size: isPortrait ? 8 : 10, delay: 0 },
+    { top: "65%", left: "85%", size: isPortrait ? 5 : 6, delay: 0.7 },
+    { top: "80%", left: "30%", size: isPortrait ? 6 : 8, delay: 1.2 },
+    { top: "40%", left: "72%", size: isPortrait ? 5 : 6, delay: 0.3 },
+    { top: "15%", left: "88%", size: isPortrait ? 5 : 6, delay: 1.8 },
   ];
 
   const pulseRingWave = pulseValue(time, 5);
@@ -79,22 +82,20 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     easing: Easing.bezier(0.34, 1.3, 0.55, 1),
   });
   const badgeOpacity = interpolate(badgeEntrance, [0, 0.6, 1], [0, 1, 1], clamp);
-  const badgeTranslateY = interpolate(badgeEntrance, [0, 0.6, 1], [-80, 8, 0], clamp);
+  const badgeTranslateY = interpolate(badgeEntrance, [0, 0.6, 1], [isPortrait ? -40 : -80, 8, 0], clamp);
   const badgeScale = interpolate(badgeEntrance, [0, 0.6, 1], [0.85, 1.02, 1], clamp);
   const badgeBlur = interpolate(badgeEntrance, [0, 0.6, 1], [12, 0, 0], clamp);
 
-  // Badge continuous glow (starts after 0.7s)
   const badgePulse = pulseValue(time - 0.7, 2.8);
-  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, 5]);
+  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, isPortrait ? 8 : 5]);
   const badgeBorderOpacity = interpolate(badgePulse, [-1, 1], [0.5, 0.9]);
 
-  // Dot inside badge (1.6s cycle)
   const dotPulse = pulseValue(time, 1.6);
   const dotScale = interpolate(dotPulse, [-1, 1], [1, 1.2]);
   const dotShadow = interpolate(dotPulse, [-1, 1], [0, 8]);
-  const dotOpacity = interpolate(dotPulse, [-1, 1], [1, 0.9]);
+  const dotOpacityVal = interpolate(dotPulse, [-1, 1], [1, 0.9]);
 
-  // ---------- adapt-zone fade in (0.2s start, 0.6s duration) ----------
+  // ---------- Adapt zone fade in ----------
   const adaptZoneEntrance = () => {
     const start = 0.2 * fps;
     const end = (0.2 + 0.6) * fps;
@@ -107,17 +108,17 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   };
   const adaptZoneOpacity = adaptZoneEntrance();
 
-  // ---------- Company cards (cardFromLeft) ----------
+  // ---------- Company cards (slide from left) ----------
   const cardFromLeft = (delaySec: number, durationSec: number) => {
     const start = delaySec * fps;
     const end = (delaySec + durationSec) * fps;
-    if (frame < start) return { opacity: 0, translateX: -120, scale: 0.9, blur: 6 };
+    if (frame < start) return { opacity: 0, translateX: isPortrait ? -80 : -120, scale: 0.9, blur: 6 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
     const op = interpolate(progress, [0, 0.55, 1], [0, 1, 1], clamp);
-    const translateX = interpolate(progress, [0, 0.55, 1], [-120, 8, 0], clamp);
+    const translateX = interpolate(progress, [0, 0.55, 1], [isPortrait ? -80 : -120, 8, 0], clamp);
     const scale = interpolate(progress, [0, 0.55, 1], [0.9, 1.01, 1], clamp);
     const blur = interpolate(progress, [0, 0.55, 1], [6, 0, 0], clamp);
     return { opacity: op, translateX, scale, blur };
@@ -128,7 +129,7 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const card3 = cardFromLeft(0.8, 0.6);
   const card4 = cardFromLeft(1.05, 0.6);
 
-  // Arrow pulse on each company card (continuous, after entrance)
+  // Arrow pulse (continuous)
   const arrowPulse = (delaySec: number) => {
     if (time < delaySec) return { opacity: 0.4, translateX: 0 };
     const wave = pulseValue(time - delaySec, 1.5);
@@ -136,13 +137,12 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     const translateXArrow = interpolate(wave, [-1, 1], [0, 6]);
     return { opacity: opacityArrow, translateX: translateXArrow };
   };
-  const arrow1 = arrowPulse(0.3 + 0.6); // after entrance ends at 0.9s, but we can start from 0.3s
+  const arrow1 = arrowPulse(0.3 + 0.6);
   const arrow2 = arrowPulse(0.55 + 0.6);
   const arrow3 = arrowPulse(0.8 + 0.6);
   const arrow4 = arrowPulse(1.05 + 0.6);
 
   // ---------- Logo center ----------
-  // logo-wrap: logoAppear (0.15s start, 0.7s duration)
   const logoAppear = () => {
     const start = 0.15 * fps;
     const end = (0.15 + 0.7) * fps;
@@ -159,17 +159,14 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   };
   const logoWrap = logoAppear();
 
-  // logoGlow (starts 0.9s, 3s cycle)
   const logoGlow = () => {
-    if (time < 0.9) return { shadowScale: 16, extraBlur: 0 };
+    if (time < 0.9) return { shadowScale: 16 };
     const wave = pulseValue(time - 0.9, 3);
     const shadowScale = interpolate(wave, [-1, 1], [16, 28]);
-    const extraBlur = interpolate(wave, [-1, 1], [0, 0]); // no extra blur, just shadow
-    return { shadowScale, extraBlur };
+    return { shadowScale };
   };
   const glow = logoGlow();
 
-  // logo-label: fadeUp (0.8s start, 0.5s duration)
   const fadeUp = () => {
     const start = 0.8 * fps;
     const end = (0.8 + 0.5) * fps;
@@ -181,11 +178,9 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   };
   const labelAnim = fadeUp();
 
-  // logo rings: continuous rotation
-  const ringRotate1 = (time * 360 / 8) % 360; // 8s cycle
-  const ringRotate2 = (time * -360 / 14) % 360; // 14s reverse
+  const ringRotate1 = (time * 360 / 8) % 360;
+  const ringRotate2 = (time * -360 / 14) % 360;
 
-  // connection dots: appear with connDot, then continuous pulse
   const connDotAppear = (delaySec: number) => {
     const start = delaySec * fps;
     const end = (delaySec + 0.3) * fps;
@@ -211,17 +206,17 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const pulse3 = connPulse(1.2, 2);
   const pulse4 = connPulse(1.4, 2);
 
-  // ---------- Result cards (cardFromRight) ----------
+  // ---------- Result cards (slide from right) ----------
   const cardFromRight = (delaySec: number, durationSec: number) => {
     const start = delaySec * fps;
     const end = (delaySec + durationSec) * fps;
-    if (frame < start) return { opacity: 0, translateX: 120, scale: 0.9, blur: 6 };
+    if (frame < start) return { opacity: 0, translateX: isPortrait ? 80 : 120, scale: 0.9, blur: 6 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
     const op = interpolate(progress, [0, 0.55, 1], [0, 1, 1], clamp);
-    const translateX = interpolate(progress, [0, 0.55, 1], [120, -8, 0], clamp);
+    const translateX = interpolate(progress, [0, 0.55, 1], [isPortrait ? 80 : 120, -8, 0], clamp);
     const scale = interpolate(progress, [0, 0.55, 1], [0.9, 1.01, 1], clamp);
     const blur = interpolate(progress, [0, 0.55, 1], [6, 0, 0], clamp);
     return { opacity: op, translateX, scale, blur };
@@ -231,7 +226,6 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const r3 = cardFromRight(1.0, 0.6);
   const r4 = cardFromRight(1.25, 0.6);
 
-  // result icon pulse (2s cycle, continuous)
   const iconPulse = () => {
     const wave = pulseValue(time, 2);
     const shadowScale = interpolate(wave, [-1, 1], [16, 24]);
@@ -244,13 +238,13 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const titleRise = () => {
     const start = 1.35 * fps;
     const end = (1.35 + 0.8) * fps;
-    if (frame < start) return { opacity: 0, translateY: 70, scale: 0.94, blur: 6 };
+    if (frame < start) return { opacity: 0, translateY: isPortrait ? 40 : 70, scale: 0.94, blur: 6 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
     const op = interpolate(progress, [0, 0.55, 1], [0, 1, 1], clamp);
-    const translateY = interpolate(progress, [0, 0.55, 1], [70, -6, 0], clamp);
+    const translateY = interpolate(progress, [0, 0.55, 1], [isPortrait ? 40 : 70, -6, 0], clamp);
     const scale = interpolate(progress, [0, 0.55, 1], [0.94, 1.01, 1], clamp);
     const blur = interpolate(progress, [0, 0.55, 1], [6, 0, 0], clamp);
     return { opacity: op, translateY, scale, blur };
@@ -258,11 +252,45 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const titleAnim = titleRise();
 
   const titleShine = `${((time % 4) / 4) * 200}% 50%`;
-
-  // Word "s'adapte" pulse (2.2s cycle)
   const wordPulse = pulseValue(time, 2.2);
   const wordScale = interpolate(wordPulse, [-1, 1], [1, 1.02]);
   const wordGlow = interpolate(wordPulse, [-1, 1], [0, 12]);
+
+  // ---------- Layout responsif ----------
+  const contentWidth = width * (isPortrait ? 0.92 : 0.9);
+  const mainGap = isPortrait ? height * 0.05 : 90;
+  const adaptZoneDirection = isPortrait ? "column" : "row";
+  const adaptZoneGap = isPortrait ? height * 0.06 : 100;
+  const companyCardsAlign = isPortrait ? "center" : "flex-end";
+  const resultCardsAlign = isPortrait ? "center" : "flex-start";
+  const logoSize = isPortrait ? 200 : 300;
+  const logoImageSize = isPortrait ? 140 : 200;
+  const ringSize1 = isPortrait ? 280 : 400;
+  const ringSize2 = isPortrait ? 360 : 520;
+  const cardMinWidth = isPortrait ? "auto" : 580;
+  const cardWidth = isPortrait ? "100%" : "auto";
+  const cardPadding = isPortrait ? "16px 24px" : "28px 44px";
+  const cardGap = isPortrait ? 20 : 30;
+  const cardIconSize = isPortrait ? 56 : 80;
+  const cardIconFontSize = isPortrait ? 32 : 44;
+  const cardTitleFontSize = isPortrait ? 24 : 34;
+  const cardSubFontSize = isPortrait ? 18 : 26;
+  const arrowOffset = isPortrait ? -40 : -78;
+  const arrowFontSize = isPortrait ? 28 : 40;
+  const lineOffset = isPortrait ? -60 : -100;
+  const lineWidth = isPortrait ? 50 : 80;
+  const resultCardMinWidth = isPortrait ? "auto" : 620;
+  const resultIconSize = isPortrait ? 50 : 70;
+  const resultIconFontSize = isPortrait ? 28 : 36;
+  const resultTitleFontSize = isPortrait ? 24 : 34;
+  const resultSubFontSize = isPortrait ? 18 : 26;
+  const titleFontSize = isPortrait ? 48 : 90;
+  const titleLineHeight = isPortrait ? 1.2 : 1.2;
+  const badgeFontSize = isPortrait ? 28 : 38;
+  const badgePadding = isPortrait ? "14px 40px" : "20px 70px";
+  const badgeGap = isPortrait ? 20 : 28;
+  const badgeDotSize = isPortrait ? 16 : 20;
+  const labelFontSize = isPortrait ? 24 : 32;
 
   return (
     <div
@@ -279,71 +307,67 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         fontFamily: "'Sora', system-ui, -apple-system, Segoe UI, Roboto, Arial",
       }}
     >
-      {/* Background elements */}
+      {/* Grille dynamique */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundImage:
             "linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px)",
-          backgroundSize: "140px 140px",
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           backgroundPosition: `${gridOffset}px ${gridOffset}px`,
           pointerEvents: "none",
         }}
       />
 
+      {/* Orbes flottants */}
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
+          width: isPortrait ? 480 : 800,
+          height: isPortrait ? 480 : 800,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          top: "10%",
-          left: "-10%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.42,
+          top: isPortrait ? "4%" : "10%",
+          left: isPortrait ? "-12%" : "-10%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.2), rgba(37,99,235,0))",
-          transform: `translate(${orb1Progress * 40}px, ${
-            orb1Progress * 64
-          }px) scale(${1 + orb1Progress * 0.05})`,
+          transform: `translate(${orb1Progress * 40}px, ${orb1Progress * 64}px) scale(${1 + orb1Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 1100,
-          height: 1100,
+          width: isPortrait ? 720 : 1100,
+          height: isPortrait ? 720 : 1100,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          bottom: "-20%",
-          right: "-15%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.36,
+          bottom: isPortrait ? "-10%" : "-20%",
+          right: isPortrait ? "-20%" : "-15%",
           background:
             "radial-gradient(circle, rgba(15,43,109,0.18), rgba(15,43,109,0))",
-          transform: `translate(${orb2Progress * -45}px, ${
-            orb2Progress * -72
-          }px) scale(${1 + orb2Progress * 0.05})`,
+          transform: `translate(${orb2Progress * -45}px, ${orb2Progress * -72}px) scale(${1 + orb2Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 500,
-          height: 500,
+          width: isPortrait ? 360 : 500,
+          height: isPortrait ? 360 : 500,
           borderRadius: "50%",
-          filter: "blur(70px)",
-          opacity: 0.4,
-          top: "50%",
-          left: "70%",
+          filter: `blur(${isPortrait ? 55 : 70}px)`,
+          opacity: 0.38,
+          top: "48%",
+          left: isPortrait ? "58%" : "70%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.25), rgba(37,99,235,0))",
-          transform: `translate(${orb3Progress * 25}px, ${
-            orb3Progress * 40
-          }px) scale(${1 + orb3Progress * 0.05})`,
+          transform: `translate(${orb3Progress * 25}px, ${orb3Progress * 40}px) scale(${1 + orb3Progress * 0.05})`,
         }}
       />
 
+      {/* Lignes flottantes */}
       <div
         style={{
           position: "absolute",
@@ -351,9 +375,9 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "35%",
+          top: isPortrait ? "28%" : "35%",
           left: "-50%",
-          transform: `translateX(${line1Translate}%) rotate(8deg)`,
+          transform: `translateX(${line1Translate}%) rotate(${isPortrait ? 5 : 8}deg)`,
           opacity: line1Opacity,
           zIndex: 1,
         }}
@@ -365,14 +389,15 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "70%",
+          top: isPortrait ? "68%" : "70%",
           left: "-40%",
-          transform: `translateX(${line2Translate}%) rotate(-5deg)`,
+          transform: `translateX(${line2Translate}%) rotate(${isPortrait ? -3 : -5}deg)`,
           opacity: line2Opacity,
           zIndex: 1,
         }}
       />
 
+      {/* Étincelles */}
       {sparks.map((spark, i) => {
         const sparkProgress = loop(time + spark.delay, 3);
         const sparkOpacity = interpolate(
@@ -405,11 +430,12 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         );
       })}
 
+      {/* Anneau pulsant central */}
       <div
         style={{
           position: "absolute",
-          width: 1000,
-          height: 1000,
+          width: isPortrait ? 760 : 1000,
+          height: isPortrait ? 760 : 1000,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%)",
@@ -421,22 +447,21 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         }}
       />
 
-      {/* Main content */}
+      {/* Contenu principal centré */}
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 90,
-          zIndex: 20,
-          maxWidth: 3400,
-          width: "90%",
           position: "absolute",
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
-          padding: "40px 0",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: mainGap,
+          zIndex: 20,
+          width: contentWidth,
+          maxWidth: 3400,
         }}
       >
         {/* Badge */}
@@ -444,12 +469,12 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 28,
+            gap: badgeGap,
             background: "rgba(224,237,255,0.75)",
             backdropFilter: "blur(12px)",
             border: `2px solid rgba(37,99,235,${badgeBorderOpacity})`,
             borderRadius: 120,
-            padding: "20px 70px",
+            padding: badgePadding,
             boxShadow: `0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 0 0 ${badgeRingSize}px rgba(37,99,235,0.2)`,
             opacity: badgeOpacity,
             transform: `translateY(${badgeTranslateY}px) scale(${badgeScale})`,
@@ -458,20 +483,20 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         >
           <div
             style={{
-              width: 20,
-              height: 20,
+              width: badgeDotSize,
+              height: badgeDotSize,
               background: "#2563EB",
               borderRadius: "50%",
-              opacity: dotOpacity,
+              opacity: dotOpacityVal,
               boxShadow: `0 0 12px #2563EB, 0 0 0 ${dotShadow}px rgba(37,99,235,0.4)`,
               transform: `scale(${dotScale})`,
             }}
           />
           <span
             style={{
-              fontSize: 38,
+              fontSize: badgeFontSize,
               fontWeight: 700,
-              letterSpacing: 6,
+              letterSpacing: isPortrait ? 4 : 6,
               textTransform: "uppercase",
               background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
               WebkitBackgroundClip: "text",
@@ -483,39 +508,43 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           </span>
         </div>
 
-        {/* Adapt zone */}
+        {/* Zone adaptative : company cards + logo + result cards */}
         <div
           style={{
             display: "flex",
+            flexDirection: adaptZoneDirection,
             alignItems: "center",
             justifyContent: "center",
-            gap: 100,
+            gap: adaptZoneGap,
             opacity: adaptZoneOpacity,
+            width: "100%",
           }}
         >
-          {/* Companies column (left) */}
+          {/* Colonne gauche : cartes entreprises */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 32,
-              alignItems: "flex-end",
+              gap: isPortrait ? 24 : 32,
+              alignItems: companyCardsAlign,
+              width: isPortrait ? "100%" : "auto",
             }}
           >
-            {/* Card 1 */}
+            {/* Carte 1 */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: cardGap,
                 background: "rgba(255,255,255,0.75)",
                 backdropFilter: "blur(10px)",
                 border: "2px solid rgba(37,99,235,0.18)",
                 borderRadius: 24,
-                padding: "28px 44px",
+                padding: cardPadding,
                 boxShadow: "0 8px 24px -8px rgba(0,0,0,0.1)",
                 position: "relative",
-                minWidth: 580,
+                minWidth: cardMinWidth,
+                width: cardWidth,
                 opacity: card1.opacity,
                 transform: `translateX(${card1.translateX}px) scale(${card1.scale})`,
                 filter: `blur(${card1.blur}px)`,
@@ -523,13 +552,13 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               <div
                 style={{
-                  width: 80,
-                  height: 80,
+                  width: cardIconSize,
+                  height: cardIconSize,
                   borderRadius: 18,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 44,
+                  fontSize: cardIconFontSize,
                   flexShrink: 0,
                   background: "rgba(37,99,235,0.1)",
                 }}
@@ -537,55 +566,59 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 🚢
               </div>
               <div>
-                <div style={{ fontSize: 34, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.2 }}>
+                <div style={{ fontSize: cardTitleFontSize, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.2 }}>
                   Importateur
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
+                <div style={{ fontSize: cardSubFontSize, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
                   Marchandises · Conteneurs
                 </div>
               </div>
-              {/* Arrow after element */}
-              <div
-                style={{
-                  position: "absolute",
-                  right: -78,
-                  top: "50%",
-                  transform: `translateY(-55%) translateX(${arrow1.translateX}px)`,
-                  fontSize: 40,
-                  color: "rgba(37,99,235,0.5)",
-                  opacity: arrow1.opacity,
-                }}
-              >
-                ›
-              </div>
-              <div
-                style={{
-                  position: "absolute",
-                  right: -100,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 80,
-                  height: 3,
-                  background: "linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1))",
-                  borderRadius: 2,
-                }}
-              />
+              {!isPortrait && (
+                <>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: arrowOffset,
+                      top: "50%",
+                      transform: `translateY(-55%) translateX(${arrow1.translateX}px)`,
+                      fontSize: arrowFontSize,
+                      color: "rgba(37,99,235,0.5)",
+                      opacity: arrow1.opacity,
+                    }}
+                  >
+                    ›
+                  </div>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: lineOffset,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: lineWidth,
+                      height: 3,
+                      background: "linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1))",
+                      borderRadius: 2,
+                    }}
+                  />
+                </>
+              )}
             </div>
 
-            {/* Card 2 */}
+            {/* Carte 2 */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: cardGap,
                 background: "rgba(255,255,255,0.75)",
                 backdropFilter: "blur(10px)",
                 border: "2px solid rgba(37,99,235,0.18)",
                 borderRadius: 24,
-                padding: "28px 44px",
+                padding: cardPadding,
                 boxShadow: "0 8px 24px -8px rgba(0,0,0,0.1)",
                 position: "relative",
-                minWidth: 580,
+                minWidth: cardMinWidth,
+                width: cardWidth,
                 opacity: card2.opacity,
                 transform: `translateX(${card2.translateX}px) scale(${card2.scale})`,
                 filter: `blur(${card2.blur}px)`,
@@ -593,13 +626,13 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               <div
                 style={{
-                  width: 80,
-                  height: 80,
+                  width: cardIconSize,
+                  height: cardIconSize,
                   borderRadius: 18,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 44,
+                  fontSize: cardIconFontSize,
                   flexShrink: 0,
                   background: "rgba(34,197,94,0.1)",
                 }}
@@ -607,54 +640,59 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 📦
               </div>
               <div>
-                <div style={{ fontSize: 34, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.2 }}>
+                <div style={{ fontSize: cardTitleFontSize, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.2 }}>
                   Exportateur
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
+                <div style={{ fontSize: cardSubFontSize, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
                   Transit · Groupage
                 </div>
               </div>
-              <div
-                style={{
-                  position: "absolute",
-                  right: -78,
-                  top: "50%",
-                  transform: `translateY(-55%) translateX(${arrow2.translateX}px)`,
-                  fontSize: 40,
-                  color: "rgba(37,99,235,0.5)",
-                  opacity: arrow2.opacity,
-                }}
-              >
-                ›
-              </div>
-              <div
-                style={{
-                  position: "absolute",
-                  right: -100,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 80,
-                  height: 3,
-                  background: "linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1))",
-                  borderRadius: 2,
-                }}
-              />
+              {!isPortrait && (
+                <>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: arrowOffset,
+                      top: "50%",
+                      transform: `translateY(-55%) translateX(${arrow2.translateX}px)`,
+                      fontSize: arrowFontSize,
+                      color: "rgba(37,99,235,0.5)",
+                      opacity: arrow2.opacity,
+                    }}
+                  >
+                    ›
+                  </div>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: lineOffset,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: lineWidth,
+                      height: 3,
+                      background: "linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1))",
+                      borderRadius: 2,
+                    }}
+                  />
+                </>
+              )}
             </div>
 
-            {/* Card 3 */}
+            {/* Carte 3 */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: cardGap,
                 background: "rgba(255,255,255,0.75)",
                 backdropFilter: "blur(10px)",
                 border: "2px solid rgba(37,99,235,0.18)",
                 borderRadius: 24,
-                padding: "28px 44px",
+                padding: cardPadding,
                 boxShadow: "0 8px 24px -8px rgba(0,0,0,0.1)",
                 position: "relative",
-                minWidth: 580,
+                minWidth: cardMinWidth,
+                width: cardWidth,
                 opacity: card3.opacity,
                 transform: `translateX(${card3.translateX}px) scale(${card3.scale})`,
                 filter: `blur(${card3.blur}px)`,
@@ -662,13 +700,13 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               <div
                 style={{
-                  width: 80,
-                  height: 80,
+                  width: cardIconSize,
+                  height: cardIconSize,
                   borderRadius: 18,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 44,
+                  fontSize: cardIconFontSize,
                   flexShrink: 0,
                   background: "rgba(245,158,11,0.1)",
                 }}
@@ -676,54 +714,59 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 🚛
               </div>
               <div>
-                <div style={{ fontSize: 34, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.2 }}>
+                <div style={{ fontSize: cardTitleFontSize, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.2 }}>
                   Commissionnaire
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
+                <div style={{ fontSize: cardSubFontSize, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
                   Logistique · Fret
                 </div>
               </div>
-              <div
-                style={{
-                  position: "absolute",
-                  right: -78,
-                  top: "50%",
-                  transform: `translateY(-55%) translateX(${arrow3.translateX}px)`,
-                  fontSize: 40,
-                  color: "rgba(37,99,235,0.5)",
-                  opacity: arrow3.opacity,
-                }}
-              >
-                ›
-              </div>
-              <div
-                style={{
-                  position: "absolute",
-                  right: -100,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 80,
-                  height: 3,
-                  background: "linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1))",
-                  borderRadius: 2,
-                }}
-              />
+              {!isPortrait && (
+                <>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: arrowOffset,
+                      top: "50%",
+                      transform: `translateY(-55%) translateX(${arrow3.translateX}px)`,
+                      fontSize: arrowFontSize,
+                      color: "rgba(37,99,235,0.5)",
+                      opacity: arrow3.opacity,
+                    }}
+                  >
+                    ›
+                  </div>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: lineOffset,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: lineWidth,
+                      height: 3,
+                      background: "linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1))",
+                      borderRadius: 2,
+                    }}
+                  />
+                </>
+              )}
             </div>
 
-            {/* Card 4 */}
+            {/* Carte 4 */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: cardGap,
                 background: "rgba(255,255,255,0.75)",
                 backdropFilter: "blur(10px)",
                 border: "2px solid rgba(37,99,235,0.18)",
                 borderRadius: 24,
-                padding: "28px 44px",
+                padding: cardPadding,
                 boxShadow: "0 8px 24px -8px rgba(0,0,0,0.1)",
                 position: "relative",
-                minWidth: 580,
+                minWidth: cardMinWidth,
+                width: cardWidth,
                 opacity: card4.opacity,
                 transform: `translateX(${card4.translateX}px) scale(${card4.scale})`,
                 filter: `blur(${card4.blur}px)`,
@@ -731,13 +774,13 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               <div
                 style={{
-                  width: 80,
-                  height: 80,
+                  width: cardIconSize,
+                  height: cardIconSize,
                   borderRadius: 18,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 44,
+                  fontSize: cardIconFontSize,
                   flexShrink: 0,
                   background: "rgba(168,85,247,0.1)",
                 }}
@@ -745,57 +788,61 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 🏛️
               </div>
               <div>
-                <div style={{ fontSize: 34, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.2 }}>
+                <div style={{ fontSize: cardTitleFontSize, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.2 }}>
                   Agence transit
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
+                <div style={{ fontSize: cardSubFontSize, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
                   Dédouanement · Conseil
                 </div>
               </div>
-              <div
-                style={{
-                  position: "absolute",
-                  right: -78,
-                  top: "50%",
-                  transform: `translateY(-55%) translateX(${arrow4.translateX}px)`,
-                  fontSize: 40,
-                  color: "rgba(37,99,235,0.5)",
-                  opacity: arrow4.opacity,
-                }}
-              >
-                ›
-              </div>
-              <div
-                style={{
-                  position: "absolute",
-                  right: -100,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 80,
-                  height: 3,
-                  background: "linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1))",
-                  borderRadius: 2,
-                }}
-              />
+              {!isPortrait && (
+                <>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: arrowOffset,
+                      top: "50%",
+                      transform: `translateY(-55%) translateX(${arrow4.translateX}px)`,
+                      fontSize: arrowFontSize,
+                      color: "rgba(37,99,235,0.5)",
+                      opacity: arrow4.opacity,
+                    }}
+                  >
+                    ›
+                  </div>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: lineOffset,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: lineWidth,
+                      height: 3,
+                      background: "linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1))",
+                      borderRadius: 2,
+                    }}
+                  />
+                </>
+              )}
             </div>
           </div>
 
-          {/* Logo center */}
+          {/* Logo central avec anneaux */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 24,
+              gap: isPortrait ? 16 : 24,
               position: "relative",
             }}
           >
-            {/* Rotating rings */}
+            {/* Anneaux rotatifs */}
             <div
               style={{
                 position: "absolute",
-                width: 400,
-                height: 400,
+                width: ringSize1,
+                height: ringSize1,
                 borderRadius: "50%",
                 border: "3px solid rgba(37,99,235,0.15)",
                 transform: `translate(-50%, -50%) rotate(${ringRotate1}deg)`,
@@ -806,8 +853,8 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             <div
               style={{
                 position: "absolute",
-                width: 520,
-                height: 520,
+                width: ringSize2,
+                height: ringSize2,
                 borderRadius: "50%",
                 border: "2px dashed rgba(37,99,235,0.08)",
                 transform: `translate(-50%, -50%) rotate(${ringRotate2}deg)`,
@@ -816,11 +863,11 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               }}
             />
 
-            {/* Logo wrap */}
+            {/* Conteneur logo */}
             <div
               style={{
-                width: 300,
-                height: 300,
+                width: logoSize,
+                height: logoSize,
                 borderRadius: "50%",
                 background: "white",
                 border: "4px solid rgba(37,99,235,0.2)",
@@ -835,7 +882,7 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 filter: `blur(${logoWrap.blur}px)`,
               }}
             >
-              {/* Connection dots */}
+              {/* Points de connexion */}
               <div
                 style={{
                   position: "absolute",
@@ -896,21 +943,20 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   transform: `scale(${dot4Appear.scale})`,
                 }}
               />
-              <img
+              <Img
                 src={staticFile("logo.png")}
                 style={{
-                  width: 200,
+                  width: logoImageSize,
                   height: "auto",
                   objectFit: "contain",
                 }}
-                alt="ShipTrack"
               />
             </div>
 
-            {/* Logo label */}
+            {/* Label sous le logo */}
             <div
               style={{
-                fontSize: 32,
+                fontSize: labelFontSize,
                 fontWeight: 700,
                 color: "#2563EB",
                 letterSpacing: 2,
@@ -926,28 +972,30 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             </div>
           </div>
 
-          {/* Results column (right) */}
+          {/* Colonne droite : cartes résultats */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 32,
-              alignItems: "flex-start",
+              gap: isPortrait ? 24 : 32,
+              alignItems: resultCardsAlign,
+              width: isPortrait ? "100%" : "auto",
             }}
           >
-            {/* Result 1 */}
+            {/* Résultat 1 */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: cardGap,
                 background: "rgba(37,99,235,0.08)",
                 backdropFilter: "blur(10px)",
                 border: "2px solid rgba(37,99,235,0.25)",
                 borderRadius: 24,
-                padding: "28px 44px",
+                padding: cardPadding,
                 position: "relative",
-                minWidth: 620,
+                minWidth: resultCardMinWidth,
+                width: cardWidth,
                 opacity: r1.opacity,
                 transform: `translateX(${r1.translateX}px) scale(${r1.scale})`,
                 filter: `blur(${r1.blur}px)`,
@@ -955,14 +1003,14 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               <div
                 style={{
-                  width: 70,
-                  height: 70,
+                  width: resultIconSize,
+                  height: resultIconSize,
                   borderRadius: "50%",
                   background: "#2563EB",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 36,
+                  fontSize: resultIconFontSize,
                   flexShrink: 0,
                   boxShadow: `0 4px ${iconPulseStyle.shadowScale}px rgba(37,99,235,0.35)`,
                   transform: `scale(${iconPulseStyle.scale})`,
@@ -971,40 +1019,43 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 ⚙️
               </div>
               <div>
-                <div style={{ fontSize: 34, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.3 }}>
+                <div style={{ fontSize: resultTitleFontSize, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.3 }}>
                   Workflows sur mesure
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
+                <div style={{ fontSize: resultSubFontSize, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
                   Vos règles, vos étapes
                 </div>
               </div>
-              <div
-                style={{
-                  position: "absolute",
-                  left: -100,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 80,
-                  height: 3,
-                  background: "linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5))",
-                  borderRadius: 2,
-                }}
-              />
+              {!isPortrait && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: -lineOffset,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: lineWidth,
+                    height: 3,
+                    background: "linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5))",
+                    borderRadius: 2,
+                  }}
+                />
+              )}
             </div>
 
-            {/* Result 2 */}
+            {/* Résultat 2 */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: cardGap,
                 background: "rgba(37,99,235,0.08)",
                 backdropFilter: "blur(10px)",
                 border: "2px solid rgba(37,99,235,0.25)",
                 borderRadius: 24,
-                padding: "28px 44px",
+                padding: cardPadding,
                 position: "relative",
-                minWidth: 620,
+                minWidth: resultCardMinWidth,
+                width: cardWidth,
                 opacity: r2.opacity,
                 transform: `translateX(${r2.translateX}px) scale(${r2.scale})`,
                 filter: `blur(${r2.blur}px)`,
@@ -1012,14 +1063,14 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               <div
                 style={{
-                  width: 70,
-                  height: 70,
+                  width: resultIconSize,
+                  height: resultIconSize,
                   borderRadius: "50%",
                   background: "#2563EB",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 36,
+                  fontSize: resultIconFontSize,
                   flexShrink: 0,
                   boxShadow: `0 4px ${iconPulseStyle.shadowScale}px rgba(37,99,235,0.35)`,
                   transform: `scale(${iconPulseStyle.scale})`,
@@ -1028,40 +1079,43 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 📊
               </div>
               <div>
-                <div style={{ fontSize: 34, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.3 }}>
+                <div style={{ fontSize: resultTitleFontSize, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.3 }}>
                   Tableaux de bord dédiés
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
+                <div style={{ fontSize: resultSubFontSize, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
                   Visibilité en temps réel
                 </div>
               </div>
-              <div
-                style={{
-                  position: "absolute",
-                  left: -100,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 80,
-                  height: 3,
-                  background: "linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5))",
-                  borderRadius: 2,
-                }}
-              />
+              {!isPortrait && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: -lineOffset,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: lineWidth,
+                    height: 3,
+                    background: "linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5))",
+                    borderRadius: 2,
+                  }}
+                />
+              )}
             </div>
 
-            {/* Result 3 */}
+            {/* Résultat 3 */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: cardGap,
                 background: "rgba(37,99,235,0.08)",
                 backdropFilter: "blur(10px)",
                 border: "2px solid rgba(37,99,235,0.25)",
                 borderRadius: 24,
-                padding: "28px 44px",
+                padding: cardPadding,
                 position: "relative",
-                minWidth: 620,
+                minWidth: resultCardMinWidth,
+                width: cardWidth,
                 opacity: r3.opacity,
                 transform: `translateX(${r3.translateX}px) scale(${r3.scale})`,
                 filter: `blur(${r3.blur}px)`,
@@ -1069,14 +1123,14 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               <div
                 style={{
-                  width: 70,
-                  height: 70,
+                  width: resultIconSize,
+                  height: resultIconSize,
                   borderRadius: "50%",
                   background: "#2563EB",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 36,
+                  fontSize: resultIconFontSize,
                   flexShrink: 0,
                   boxShadow: `0 4px ${iconPulseStyle.shadowScale}px rgba(37,99,235,0.35)`,
                   transform: `scale(${iconPulseStyle.scale})`,
@@ -1085,40 +1139,43 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 🔔
               </div>
               <div>
-                <div style={{ fontSize: 34, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.3 }}>
+                <div style={{ fontSize: resultTitleFontSize, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.3 }}>
                   Alertes personnalisées
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
+                <div style={{ fontSize: resultSubFontSize, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
                   Notifications intelligentes
                 </div>
               </div>
-              <div
-                style={{
-                  position: "absolute",
-                  left: -100,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 80,
-                  height: 3,
-                  background: "linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5))",
-                  borderRadius: 2,
-                }}
-              />
+              {!isPortrait && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: -lineOffset,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: lineWidth,
+                    height: 3,
+                    background: "linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5))",
+                    borderRadius: 2,
+                  }}
+                />
+              )}
             </div>
 
-            {/* Result 4 */}
+            {/* Résultat 4 */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 30,
+                gap: cardGap,
                 background: "rgba(37,99,235,0.08)",
                 backdropFilter: "blur(10px)",
                 border: "2px solid rgba(37,99,235,0.25)",
                 borderRadius: 24,
-                padding: "28px 44px",
+                padding: cardPadding,
                 position: "relative",
-                minWidth: 620,
+                minWidth: resultCardMinWidth,
+                width: cardWidth,
                 opacity: r4.opacity,
                 transform: `translateX(${r4.translateX}px) scale(${r4.scale})`,
                 filter: `blur(${r4.blur}px)`,
@@ -1126,14 +1183,14 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               <div
                 style={{
-                  width: 70,
-                  height: 70,
+                  width: resultIconSize,
+                  height: resultIconSize,
                   borderRadius: "50%",
                   background: "#2563EB",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 36,
+                  fontSize: resultIconFontSize,
                   flexShrink: 0,
                   boxShadow: `0 4px ${iconPulseStyle.shadowScale}px rgba(37,99,235,0.35)`,
                   transform: `scale(${iconPulseStyle.scale})`,
@@ -1142,35 +1199,37 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 📋
               </div>
               <div>
-                <div style={{ fontSize: 34, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.3 }}>
+                <div style={{ fontSize: resultTitleFontSize, fontWeight: 600, color: "#0F2B6D", lineHeight: 1.3 }}>
                   Documents automatisés
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
+                <div style={{ fontSize: resultSubFontSize, fontWeight: 400, color: "#2C3E66", marginTop: 4 }}>
                   Vos modèles, vos formats
                 </div>
               </div>
-              <div
-                style={{
-                  position: "absolute",
-                  left: -100,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 80,
-                  height: 3,
-                  background: "linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5))",
-                  borderRadius: 2,
-                }}
-              />
+              {!isPortrait && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: -lineOffset,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: lineWidth,
+                    height: 3,
+                    background: "linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5))",
+                    borderRadius: 2,
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>
 
-        {/* Title */}
+        {/* Titre final */}
         <div
           style={{
-            fontSize: 90,
+            fontSize: titleFontSize,
             fontWeight: 800,
-            lineHeight: 1.2,
+            lineHeight: titleLineHeight,
             textAlign: "center",
             letterSpacing: "-0.02em",
             background:
@@ -1180,8 +1239,6 @@ export const Scene13 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             color: "transparent",
-            maxWidth: 2800,
-            margin: "0 auto",
             opacity: titleAnim.opacity,
             transform: `translateY(${titleAnim.translateY}px) scale(${titleAnim.scale})`,
             filter: `blur(${titleAnim.blur}px)`,

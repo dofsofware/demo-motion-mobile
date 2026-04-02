@@ -22,7 +22,8 @@ const pulseValue = (time: number, duration: number, phase = 0) =>
 
 export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const time = frame / fps;
   const duration = outFrame - inFrame;
 
@@ -34,12 +35,13 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const outZoom = interpolate(
     frame,
     [duration - crossfadeFrames, duration],
-    [1, 1.06],
+    [1, 1.05],
     clamp
   );
 
-  // ---------- Background elements (blue theme) ----------
-  const gridOffset = (time / 18) * 140;
+  // ---------- Background elements responsives ----------
+  const gridSize = isPortrait ? 96 : 140;
+  const gridOffset = (time / 18) * gridSize;
 
   const orb1Progress = pulseValue(time, 22);
   const orb2Progress = pulseValue(time, 26, 3);
@@ -61,43 +63,43 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   );
 
   const sparks = [
-    { top: "20%", left: "15%", size: 10, delay: 0 },
-    { top: "65%", left: "85%", size: 6, delay: 0.7 },
-    { top: "80%", left: "30%", size: 8, delay: 1.2 },
-    { top: "40%", left: "72%", size: 6, delay: 0.3 },
-    { top: "15%", left: "88%", size: 6, delay: 1.8 },
+    { top: "20%", left: "15%", size: isPortrait ? 8 : 10, delay: 0 },
+    { top: "65%", left: "85%", size: isPortrait ? 5 : 6, delay: 0.7 },
+    { top: "80%", left: "30%", size: isPortrait ? 6 : 8, delay: 1.2 },
+    { top: "40%", left: "72%", size: isPortrait ? 5 : 6, delay: 0.3 },
+    { top: "15%", left: "88%", size: isPortrait ? 5 : 6, delay: 1.8 },
   ];
 
   const pulseRingWave = pulseValue(time, 5);
   const pulseRingScale = interpolate(pulseRingWave, [-1, 1], [0.92, 1.12]);
   const pulseRingOpacity = interpolate(pulseRingWave, [-1, 1], [0.5, 0.85]);
 
-  // ---------- Badge (slideDownPop) ----------
+  // ---------- Badge (slideDownPop adapté) ----------
   const badgeEntrance = interpolate(frame, [0, 0.7 * fps], [0, 1], {
     ...clamp,
     easing: Easing.bezier(0.34, 1.3, 0.55, 1),
   });
   const badgeOpacity = interpolate(badgeEntrance, [0, 0.6, 1], [0, 1, 1], clamp);
-  const badgeTranslateY = interpolate(badgeEntrance, [0, 0.6, 1], [-80, 8, 0], clamp);
+  const badgeTranslateY = interpolate(badgeEntrance, [0, 0.6, 1], [isPortrait ? -40 : -80, 8, 0], clamp);
   const badgeScale = interpolate(badgeEntrance, [0, 0.6, 1], [0.85, 1.02, 1], clamp);
   const badgeBlur = interpolate(badgeEntrance, [0, 0.6, 1], [12, 0, 0], clamp);
 
   const badgePulse = pulseValue(time - 0.7, 2.8);
-  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, 5]);
+  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, isPortrait ? 8 : 5]);
   const badgeBorderOpacity = interpolate(badgePulse, [-1, 1], [0.5, 0.9]);
 
   const dotPulse = pulseValue(time, 1.6);
   const dotScale = interpolate(dotPulse, [-1, 1], [1, 1.2]);
   const dotShadow = interpolate(dotPulse, [-1, 1], [0, 8]);
-  const dotOpacity = interpolate(dotPulse, [-1, 1], [1, 0.9]);
+  const dotOpacityVal = interpolate(dotPulse, [-1, 1], [1, 0.9]);
 
-  // ---------- Title (riseGlow) ----------
+  // ---------- Title (riseGlow adapté) ----------
   const titleEntrance = interpolate(frame, [0, 0.9 * fps], [0, 1], {
     ...clamp,
     easing: Easing.bezier(0.2, 0.9, 0.3, 1.2),
   });
   const titleOpacity = interpolate(titleEntrance, [0, 0.4, 1], [0, 0.9, 1], clamp);
-  const titleTranslateY = interpolate(titleEntrance, [0, 0.4, 1], [100, -12, 0], clamp);
+  const titleTranslateY = interpolate(titleEntrance, [0, 0.4, 1], [isPortrait ? 50 : 100, -12, 0], clamp);
   const titleScale = interpolate(titleEntrance, [0, 0.4, 1], [0.92, 1.01, 1], clamp);
   const titleBlur = interpolate(titleEntrance, [0, 0.4, 1], [8, 0, 0], clamp);
 
@@ -107,33 +109,33 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const wordScale = interpolate(wordPulse, [-1, 1], [1, 1.02]);
   const wordGlow = interpolate(wordPulse, [-1, 1], [0, 12]);
 
-  // ---------- Files section (slideUpFade) ----------
+  // ---------- Files section (slideUpFade adapté) ----------
   const sectionEntrance = () => {
     const start = 0.5 * fps;
     const end = (0.5 + 0.8) * fps;
-    if (frame < start) return { opacity: 0, translateY: 80, blur: 6 };
+    if (frame < start) return { opacity: 0, translateY: isPortrait ? 40 : 80, blur: 6 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.2, 0.9, 0.4, 1),
     });
     const op = progress;
-    const translateY = interpolate(progress, [0, 1], [80, 0]);
+    const translateY = interpolate(progress, [0, 1], [isPortrait ? 40 : 80, 0]);
     const blur = interpolate(progress, [0, 1], [6, 0]);
     return { opacity: op, translateY, blur };
   };
   const sectionAnim = sectionEntrance();
 
-  // Card rise
+  // Card rise (adapté)
   const cardRise = (delaySec: number) => {
     const start = delaySec * fps;
     const end = (delaySec + 0.6) * fps;
-    if (frame < start) return { opacity: 0, translateY: 40, blur: 4 };
+    if (frame < start) return { opacity: 0, translateY: isPortrait ? 30 : 40, blur: 4 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.2, 0.9, 0.4, 1),
     });
     const op = progress;
-    const translateY = interpolate(progress, [0, 1], [40, 0]);
+    const translateY = interpolate(progress, [0, 1], [isPortrait ? 30 : 40, 0]);
     const blur = interpolate(progress, [0, 1], [4, 0]);
     return { opacity: op, translateY, blur };
   };
@@ -141,33 +143,29 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const card2Anim = cardRise(0.9);
   const card3Anim = cardRise(1.1);
 
-  // Delayed card pulse on warning text (pulseRedBg)
+  // Warning pulse (identique)
   const warningPulse = () => {
-    if (time < 1.1 + 0.6) return { shadowScale: 0 }; // after card rises
+    if (time < 1.1 + 0.6) return { shadowScale: 0 };
     const wave = pulseValue(time - 1.7, 1.4);
     const shadow = interpolate(wave, [-1, 1], [0, 12]);
     return { shadowScale: shadow };
   };
   const warningPulseStyle = warningPulse();
 
-  // Success transition for delayed card
-  const successTime = 3.3; // seconds after start (card appears at 0.9+0.6=1.5s, so success at 3.3s)
+  // Success transition (identique)
+  const successTime = 3.3;
   const isSuccess = time >= successTime;
 
-  // Flash effect (duration 0.6s)
-  const flashProgress = () => {
+  const flashProgressValue = (() => {
     if (!isSuccess) return 0;
     const start = successTime;
     const end = successTime + 0.6;
     if (time >= end) return 1;
-    const progress = (time - start) / 0.6;
-    return progress;
-  };
-  const flashProgressValue = flashProgress();
+    return (time - start) / 0.6;
+  })();
   const flashOpacity = interpolate(flashProgressValue, [0, 0.3, 1], [0, 0.2, 0], clamp);
   const flashShadow = interpolate(flashProgressValue, [0, 0.3, 1], [0, 20, 0], clamp);
 
-  // Status text and progress bar changes after success
   const delayedStatus = isSuccess ? "✓ Débloqué" : "⚠️ Retard";
   const delayedStatusClass = isSuccess ? "resolved" : "delayed";
   const warningMessage = isSuccess ? null : "🚨 Document manquant – intervention requise";
@@ -178,13 +176,13 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     ? "linear-gradient(135deg, #22C55E, #15803D)"
     : "linear-gradient(135deg, #F59E0B, #DC2626)";
 
-  // Particles effect: create a set of particles that appear at success time and fade out over 0.6s
+  // Particles (identiques)
   const particles = [];
   if (isSuccess) {
     const start = successTime;
     const end = successTime + 0.6;
     if (time >= start && time <= end) {
-      const t = (time - start) / 0.6; // 0 to 1
+      const t = (time - start) / 0.6;
       const particleCount = 30;
       for (let i = 0; i < particleCount; i++) {
         const angle = Math.random() * Math.PI * 2;
@@ -197,6 +195,32 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       }
     }
   }
+
+  // Layout responsif
+  const contentWidth = width * (isPortrait ? 0.88 : 0.85);
+  const mainGap = isPortrait ? height * 0.05 : 70;
+  const badgeFontSize = isPortrait ? 28 : 38;
+  const badgePadding = isPortrait ? "14px 40px" : "20px 70px";
+  const badgeGap = isPortrait ? 20 : 28;
+  const badgeDotSize = isPortrait ? 16 : 20;
+  const titleFontSize = isPortrait ? 52 : 90;
+  const titleLineHeight = isPortrait ? 1.2 : 1.2;
+  const sectionPadding = isPortrait ? "30px 24px" : "50px 60px";
+  const sectionBorderRadius = isPortrait ? 32 : 48;
+  const sectionTitleFontSize = isPortrait ? 32 : 44;
+  const sectionSubFontSize = isPortrait ? 20 : 28;
+  const cardsDirection = isPortrait ? "column" : "row";
+  const cardsGap = isPortrait ? 30 : 40;
+  const cardPadding = isPortrait ? "24px 20px" : "32px 28px";
+  const cardBorderRadius = isPortrait ? 24 : 32;
+  const cardTitleFontSize = isPortrait ? 28 : 34;
+  const cardStatusFontSize = isPortrait ? 20 : 26;
+  const cardStatusPadding = isPortrait ? "4px 14px" : "6px 20px";
+  const cardTextFontSize = isPortrait ? 22 : 28;
+  const cardProgressFontSize = isPortrait ? 18 : 24;
+  const buttonFontSize = isPortrait ? 24 : 30;
+  const buttonPadding = isPortrait ? "14px 24px" : "18px 40px";
+  const buttonGap = isPortrait ? 12 : 18;
 
   return (
     <div
@@ -217,71 +241,67 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         justifyContent: "center",
       }}
     >
-      {/* Background elements */}
+      {/* Grille dynamique */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundImage:
             "linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px)",
-          backgroundSize: "140px 140px",
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           backgroundPosition: `${gridOffset}px ${gridOffset}px`,
           pointerEvents: "none",
         }}
       />
 
+      {/* Orbes flottants */}
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
+          width: isPortrait ? 480 : 800,
+          height: isPortrait ? 480 : 800,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          top: "10%",
-          left: "-10%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.42,
+          top: isPortrait ? "4%" : "10%",
+          left: isPortrait ? "-12%" : "-10%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.2), rgba(37,99,235,0))",
-          transform: `translate(${orb1Progress * 40}px, ${
-            orb1Progress * 64
-          }px) scale(${1 + orb1Progress * 0.05})`,
+          transform: `translate(${orb1Progress * 40}px, ${orb1Progress * 64}px) scale(${1 + orb1Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 1100,
-          height: 1100,
+          width: isPortrait ? 720 : 1100,
+          height: isPortrait ? 720 : 1100,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          bottom: "-20%",
-          right: "-15%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.36,
+          bottom: isPortrait ? "-10%" : "-20%",
+          right: isPortrait ? "-20%" : "-15%",
           background:
             "radial-gradient(circle, rgba(15,43,109,0.18), rgba(15,43,109,0))",
-          transform: `translate(${orb2Progress * -45}px, ${
-            orb2Progress * -72
-          }px) scale(${1 + orb2Progress * 0.05})`,
+          transform: `translate(${orb2Progress * -45}px, ${orb2Progress * -72}px) scale(${1 + orb2Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 500,
-          height: 500,
+          width: isPortrait ? 360 : 500,
+          height: isPortrait ? 360 : 500,
           borderRadius: "50%",
-          filter: "blur(70px)",
-          opacity: 0.4,
-          top: "50%",
-          left: "70%",
+          filter: `blur(${isPortrait ? 55 : 70}px)`,
+          opacity: 0.38,
+          top: "48%",
+          left: isPortrait ? "58%" : "70%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.25), rgba(37,99,235,0))",
-          transform: `translate(${orb3Progress * 25}px, ${
-            orb3Progress * 40
-          }px) scale(${1 + orb3Progress * 0.05})`,
+          transform: `translate(${orb3Progress * 25}px, ${orb3Progress * 40}px) scale(${1 + orb3Progress * 0.05})`,
         }}
       />
 
+      {/* Lignes flottantes */}
       <div
         style={{
           position: "absolute",
@@ -289,9 +309,9 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "35%",
+          top: isPortrait ? "28%" : "35%",
           left: "-50%",
-          transform: `translateX(${line1Translate}%) rotate(8deg)`,
+          transform: `translateX(${line1Translate}%) rotate(${isPortrait ? 5 : 8}deg)`,
           opacity: line1Opacity,
           zIndex: 1,
         }}
@@ -303,14 +323,15 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "70%",
+          top: isPortrait ? "68%" : "70%",
           left: "-40%",
-          transform: `translateX(${line2Translate}%) rotate(-5deg)`,
+          transform: `translateX(${line2Translate}%) rotate(${isPortrait ? -3 : -5}deg)`,
           opacity: line2Opacity,
           zIndex: 1,
         }}
       />
 
+      {/* Étincelles */}
       {sparks.map((spark, i) => {
         const sparkProgress = loop(time + spark.delay, 3);
         const sparkOpacity = interpolate(
@@ -343,11 +364,12 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         );
       })}
 
+      {/* Anneau pulsant central */}
       <div
         style={{
           position: "absolute",
-          width: 1000,
-          height: 1000,
+          width: isPortrait ? 760 : 1000,
+          height: isPortrait ? 760 : 1000,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%)",
@@ -359,17 +381,17 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         }}
       />
 
-      {/* Main content */}
+      {/* Contenu principal centré */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 70,
+          gap: mainGap,
           zIndex: 20,
           maxWidth: 3000,
-          width: "85%",
+          width: contentWidth,
           position: "relative",
           backdropFilter: "blur(2px)",
           padding: "40px 0",
@@ -380,12 +402,12 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 28,
+            gap: badgeGap,
             background: "rgba(224,237,255,0.75)",
             backdropFilter: "blur(12px)",
             border: `2px solid rgba(37,99,235,${badgeBorderOpacity})`,
             borderRadius: 120,
-            padding: "20px 70px",
+            padding: badgePadding,
             boxShadow: `0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 0 0 ${badgeRingSize}px rgba(37,99,235,0.2)`,
             opacity: badgeOpacity,
             transform: `translateY(${badgeTranslateY}px) scale(${badgeScale})`,
@@ -394,20 +416,20 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         >
           <div
             style={{
-              width: 20,
-              height: 20,
+              width: badgeDotSize,
+              height: badgeDotSize,
               background: "#2563EB",
               borderRadius: "50%",
-              opacity: dotOpacity,
+              opacity: dotOpacityVal,
               boxShadow: `0 0 12px #2563EB, 0 0 0 ${dotShadow}px rgba(37,99,235,0.4)`,
               transform: `scale(${dotScale})`,
             }}
           />
           <span
             style={{
-              fontSize: 38,
+              fontSize: badgeFontSize,
               fontWeight: 700,
-              letterSpacing: 6,
+              letterSpacing: isPortrait ? 4 : 6,
               textTransform: "uppercase",
               background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
               WebkitBackgroundClip: "text",
@@ -419,12 +441,12 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           </span>
         </div>
 
-        {/* Title */}
+        {/* Titre */}
         <div
           style={{
-            fontSize: 90,
+            fontSize: titleFontSize,
             fontWeight: 800,
-            lineHeight: 1.2,
+            lineHeight: titleLineHeight,
             textAlign: "center",
             letterSpacing: "-0.02em",
             background:
@@ -460,14 +482,14 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           la situation en un clic.
         </div>
 
-        {/* Files section */}
+        {/* Section des dossiers */}
         <div
           style={{
             width: "100%",
             background: "rgba(224,237,255,0.6)",
             backdropFilter: "blur(12px)",
-            borderRadius: 48,
-            padding: "50px 60px",
+            borderRadius: sectionBorderRadius,
+            padding: sectionPadding,
             border: "2px solid rgba(37,99,235,0.25)",
             boxShadow: "0 25px 45px -12px rgba(0,0,0,0.15)",
             marginTop: 20,
@@ -478,24 +500,28 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         >
           <div
             style={{
-              fontSize: 44,
+              fontSize: sectionTitleFontSize,
               fontWeight: 700,
               color: "#0F2B6D",
-              marginBottom: 40,
+              marginBottom: isPortrait ? 24 : 40,
               display: "flex",
               alignItems: "center",
-              gap: 20,
+              gap: isPortrait ? 12 : 20,
+              flexWrap: "wrap",
             }}
           >
             📋 Dossiers critiques
-            <span style={{ fontSize: 28, fontWeight: 400, color: "#2C3E66" }}>– alerte temps réel</span>
+            <span style={{ fontSize: sectionSubFontSize, fontWeight: 400, color: "#2C3E66" }}>
+              – alerte temps réel
+            </span>
           </div>
+
           <div
             style={{
               display: "flex",
-              gap: 40,
+              flexDirection: cardsDirection,
+              gap: cardsGap,
               justifyContent: "space-between",
-              flexWrap: "wrap",
             }}
           >
             {/* Dossier 1 */}
@@ -503,8 +529,8 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               style={{
                 flex: 1,
                 background: "white",
-                borderRadius: 32,
-                padding: "32px 28px",
+                borderRadius: cardBorderRadius,
+                padding: cardPadding,
                 boxShadow: "0 15px 30px -12px rgba(0,0,0,0.1)",
                 opacity: card1Anim.opacity,
                 transform: `translateY(${card1Anim.translateY}px)`,
@@ -516,15 +542,19 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: 24,
+                  marginBottom: isPortrait ? 16 : 24,
+                  flexWrap: "wrap",
+                  gap: 10,
                 }}
               >
-                <span style={{ fontSize: 34, fontWeight: 700, color: "#0F2B6D" }}>Dossier #2847</span>
+                <span style={{ fontSize: cardTitleFontSize, fontWeight: 700, color: "#0F2B6D" }}>
+                  Dossier #2847
+                </span>
                 <span
                   style={{
-                    padding: "6px 20px",
+                    padding: cardStatusPadding,
                     borderRadius: 40,
-                    fontSize: 26,
+                    fontSize: cardStatusFontSize,
                     fontWeight: 600,
                     background: "#F59E0B",
                     color: "white",
@@ -533,11 +563,11 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   En cours
                 </span>
               </div>
-              <div style={{ marginBottom: 30 }}>
-                <div style={{ fontSize: 28, color: "#2C3E66", lineHeight: 1.4, marginBottom: 16 }}>
+              <div style={{ marginBottom: isPortrait ? 20 : 30 }}>
+                <div style={{ fontSize: cardTextFontSize, color: "#2C3E66", lineHeight: 1.4, marginBottom: 12 }}>
                   <strong style={{ color: "#0F2B6D" }}>Transit :</strong> Shanghai → Dakar
                 </div>
-                <div style={{ fontSize: 28, color: "#2C3E66", lineHeight: 1.4 }}>
+                <div style={{ fontSize: cardTextFontSize, color: "#2C3E66", lineHeight: 1.4 }}>
                   <strong style={{ color: "#0F2B6D" }}>Étape :</strong> En mer
                 </div>
               </div>
@@ -546,7 +576,7 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    fontSize: 24,
+                    fontSize: cardProgressFontSize,
                     color: "#2C3E66",
                     marginBottom: 12,
                   }}
@@ -556,7 +586,7 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 </div>
                 <div
                   style={{
-                    height: 12,
+                    height: isPortrait ? 8 : 12,
                     background: "rgba(37,99,235,0.1)",
                     borderRadius: 20,
                     overflow: "hidden",
@@ -574,13 +604,13 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               </div>
             </div>
 
-            {/* Dossier 2 (delayed) */}
+            {/* Dossier 2 (avec délai) */}
             <div
               style={{
                 flex: 1,
                 background: isSuccess ? "white" : "#FFF5F5",
-                borderRadius: 32,
-                padding: "32px 28px",
+                borderRadius: cardBorderRadius,
+                padding: cardPadding,
                 boxShadow: "0 15px 30px -12px rgba(0,0,0,0.1)",
                 border: isSuccess ? "none" : "2px solid #EF4444",
                 position: "relative",
@@ -590,7 +620,6 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 filter: `blur(${card2Anim.blur}px)`,
               }}
             >
-              {/* Success flash overlay */}
               {isSuccess && flashOpacity > 0 && (
                 <div
                   style={{
@@ -609,15 +638,19 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: 24,
+                  marginBottom: isPortrait ? 16 : 24,
+                  flexWrap: "wrap",
+                  gap: 10,
                 }}
               >
-                <span style={{ fontSize: 34, fontWeight: 700, color: "#0F2B6D" }}>Dossier #2850</span>
+                <span style={{ fontSize: cardTitleFontSize, fontWeight: 700, color: "#0F2B6D" }}>
+                  Dossier #2850
+                </span>
                 <span
                   style={{
-                    padding: "6px 20px",
+                    padding: cardStatusPadding,
                     borderRadius: 40,
-                    fontSize: 26,
+                    fontSize: cardStatusFontSize,
                     fontWeight: 600,
                     background: delayedStatusClass === "resolved" ? "#22C55E" : "#EF4444",
                     color: "white",
@@ -626,11 +659,11 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   {delayedStatus}
                 </span>
               </div>
-              <div style={{ marginBottom: 30 }}>
-                <div style={{ fontSize: 28, color: "#2C3E66", lineHeight: 1.4, marginBottom: 16 }}>
+              <div style={{ marginBottom: isPortrait ? 20 : 30 }}>
+                <div style={{ fontSize: cardTextFontSize, color: "#2C3E66", lineHeight: 1.4, marginBottom: 12 }}>
                   <strong style={{ color: "#0F2B6D" }}>Transit :</strong> Le Havre → Abidjan
                 </div>
-                <div style={{ fontSize: 28, color: "#2C3E66", lineHeight: 1.4 }}>
+                <div style={{ fontSize: cardTextFontSize, color: "#2C3E66", lineHeight: 1.4 }}>
                   <strong style={{ color: "#0F2B6D" }}>Étape :</strong> Dédouanement
                 </div>
                 {warningMessage && (
@@ -640,10 +673,10 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                       background: "#EF4444",
                       color: "white",
                       borderRadius: 40,
-                      padding: "8px 20px",
-                      fontSize: 24,
+                      padding: isPortrait ? "6px 16px" : "8px 20px",
+                      fontSize: cardStatusFontSize,
                       fontWeight: 600,
-                      marginTop: 16,
+                      marginTop: 12,
                       boxShadow: `0 0 0 ${warningPulseStyle.shadowScale}px rgba(239,68,68,0.4)`,
                     }}
                   >
@@ -656,7 +689,7 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    fontSize: 24,
+                    fontSize: cardProgressFontSize,
                     color: "#2C3E66",
                     marginBottom: 12,
                   }}
@@ -666,7 +699,7 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 </div>
                 <div
                   style={{
-                    height: 12,
+                    height: isPortrait ? 8 : 12,
                     background: "rgba(37,99,235,0.1)",
                     borderRadius: 20,
                     overflow: "hidden",
@@ -687,16 +720,16 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   background: buttonBackground,
                   border: "none",
                   borderRadius: 60,
-                  padding: "18px 40px",
-                  fontSize: 30,
+                  padding: buttonPadding,
+                  fontSize: buttonFontSize,
                   fontWeight: 700,
                   color: "white",
                   fontFamily: "'Sora', sans-serif",
                   display: "flex",
                   alignItems: "center",
-                  gap: 18,
+                  gap: buttonGap,
                   cursor: "default",
-                  marginTop: 24,
+                  marginTop: isPortrait ? 20 : 24,
                   width: "100%",
                   justifyContent: "center",
                   boxShadow: "0 10px 25px -8px rgba(0,0,0,0.2)",
@@ -712,8 +745,8 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               style={{
                 flex: 1,
                 background: "white",
-                borderRadius: 32,
-                padding: "32px 28px",
+                borderRadius: cardBorderRadius,
+                padding: cardPadding,
                 boxShadow: "0 15px 30px -12px rgba(0,0,0,0.1)",
                 opacity: card3Anim.opacity,
                 transform: `translateY(${card3Anim.translateY}px)`,
@@ -725,15 +758,19 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: 24,
+                  marginBottom: isPortrait ? 16 : 24,
+                  flexWrap: "wrap",
+                  gap: 10,
                 }}
               >
-                <span style={{ fontSize: 34, fontWeight: 700, color: "#0F2B6D" }}>Dossier #2852</span>
+                <span style={{ fontSize: cardTitleFontSize, fontWeight: 700, color: "#0F2B6D" }}>
+                  Dossier #2852
+                </span>
                 <span
                   style={{
-                    padding: "6px 20px",
+                    padding: cardStatusPadding,
                     borderRadius: 40,
-                    fontSize: 26,
+                    fontSize: cardStatusFontSize,
                     fontWeight: 600,
                     background: "#F59E0B",
                     color: "white",
@@ -742,11 +779,11 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   En cours
                 </span>
               </div>
-              <div style={{ marginBottom: 30 }}>
-                <div style={{ fontSize: 28, color: "#2C3E66", lineHeight: 1.4, marginBottom: 16 }}>
+              <div style={{ marginBottom: isPortrait ? 20 : 30 }}>
+                <div style={{ fontSize: cardTextFontSize, color: "#2C3E66", lineHeight: 1.4, marginBottom: 12 }}>
                   <strong style={{ color: "#0F2B6D" }}>Transit :</strong> Marseille → Casablanca
                 </div>
-                <div style={{ fontSize: 28, color: "#2C3E66", lineHeight: 1.4 }}>
+                <div style={{ fontSize: cardTextFontSize, color: "#2C3E66", lineHeight: 1.4 }}>
                   <strong style={{ color: "#0F2B6D" }}>Étape :</strong> Transport
                 </div>
               </div>
@@ -755,7 +792,7 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    fontSize: 24,
+                    fontSize: cardProgressFontSize,
                     color: "#2C3E66",
                     marginBottom: 12,
                   }}
@@ -765,7 +802,7 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 </div>
                 <div
                   style={{
-                    height: 12,
+                    height: isPortrait ? 8 : 12,
                     background: "rgba(37,99,235,0.1)",
                     borderRadius: 20,
                     overflow: "hidden",
@@ -786,7 +823,7 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         </div>
       </div>
 
-      {/* Particles */}
+      {/* Particules de succès */}
       {particles.map((p, idx) => (
         <div
           key={idx}
@@ -794,8 +831,8 @@ export const Scene16 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             position: "absolute",
             left: "50%",
             top: "50%",
-            width: 8,
-            height: 8,
+            width: isPortrait ? 6 : 8,
+            height: isPortrait ? 6 : 8,
             background: "#22C55E",
             borderRadius: "50%",
             pointerEvents: "none",

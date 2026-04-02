@@ -1,5 +1,6 @@
 import {
   Easing,
+  Img,
   interpolate,
   staticFile,
   useCurrentFrame,
@@ -23,11 +24,12 @@ const pulseValue = (time: number, duration: number, phase = 0) =>
 
 export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const time = frame / fps;
   const duration = outFrame - inFrame;
 
-  // Crossfade (same as other scenes)
+  // Crossfade
   const tIn = Math.max(0, Math.min(1, frame / crossfadeFrames));
   const tOut = Math.max(0, Math.min(1, (duration - frame) / crossfadeFrames));
   const opacity = Math.min(tIn, tOut);
@@ -35,12 +37,13 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const outZoom = interpolate(
     frame,
     [duration - crossfadeFrames, duration],
-    [1, 1.06],
+    [1, 1.05],
     clamp
   );
 
-  // ---------- Background elements (identical to previous scenes) ----------
-  const gridOffset = (time / 18) * 140;
+  // ---------- Background elements responsives ----------
+  const gridSize = isPortrait ? 96 : 140;
+  const gridOffset = (time / 18) * gridSize;
 
   const orb1Progress = pulseValue(time, 22);
   const orb2Progress = pulseValue(time, 26, 3);
@@ -62,11 +65,11 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   );
 
   const sparks = [
-    { top: "20%", left: "15%", size: 10, delay: 0 },
-    { top: "65%", left: "85%", size: 6, delay: 0.7 },
-    { top: "80%", left: "30%", size: 8, delay: 1.2 },
-    { top: "40%", left: "72%", size: 6, delay: 0.3 },
-    { top: "15%", left: "88%", size: 6, delay: 1.8 },
+    { top: "20%", left: "15%", size: isPortrait ? 8 : 10, delay: 0 },
+    { top: "65%", left: "85%", size: isPortrait ? 5 : 6, delay: 0.7 },
+    { top: "80%", left: "30%", size: isPortrait ? 6 : 8, delay: 1.2 },
+    { top: "40%", left: "72%", size: isPortrait ? 5 : 6, delay: 0.3 },
+    { top: "15%", left: "88%", size: isPortrait ? 5 : 6, delay: 1.8 },
   ];
 
   const pulseRingWave = pulseValue(time, 5);
@@ -74,29 +77,25 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const pulseRingOpacity = interpolate(pulseRingWave, [-1, 1], [0.5, 0.85]);
 
   // ---------- Badge ----------
-  // Entrance: slideDownPop (0.7s, cubic-bezier(0.34,1.3,0.55,1))
   const badgeEntrance = interpolate(frame, [0, 0.7 * fps], [0, 1], {
     ...clamp,
     easing: Easing.bezier(0.34, 1.3, 0.55, 1),
   });
   const badgeOpacity = interpolate(badgeEntrance, [0, 0.6, 1], [0, 1, 1], clamp);
-  const badgeTranslateY = interpolate(badgeEntrance, [0, 0.6, 1], [-80, 8, 0], clamp);
+  const badgeTranslateY = interpolate(badgeEntrance, [0, 0.6, 1], [isPortrait ? -40 : -80, 8, 0], clamp);
   const badgeScale = interpolate(badgeEntrance, [0, 0.6, 1], [0.85, 1.02, 1], clamp);
   const badgeBlur = interpolate(badgeEntrance, [0, 0.6, 1], [12, 0, 0], clamp);
 
-  // Badge continuous glow (starts after 0.7s)
   const badgePulse = pulseValue(time - 0.7, 2.8);
-  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, 5]);
+  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, isPortrait ? 8 : 5]);
   const badgeBorderOpacity = interpolate(badgePulse, [-1, 1], [0.5, 0.9]);
 
-  // Dot inside badge (1.6s cycle)
   const dotPulse = pulseValue(time, 1.6);
   const dotScale = interpolate(dotPulse, [-1, 1], [1, 1.2]);
   const dotShadow = interpolate(dotPulse, [-1, 1], [0, 8]);
-  const dotOpacity = interpolate(dotPulse, [-1, 1], [1, 0.9]);
+  const dotOpacityVal = interpolate(dotPulse, [-1, 1], [1, 0.9]);
 
-  // ---------- Card animations ----------
-  // Helper for entrance progress
+  // ---------- Cards animations (entrées adaptées au portrait) ----------
   const cardEntrance = (
     startSec: number,
     durationSec: number,
@@ -111,13 +110,13 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     });
   };
 
-  // Card 1 entrance (0.1s start, 0.8s duration)
+  // Card 1 (vient de gauche)
   const card1Progress = cardEntrance(0.1, 0.8, Easing.bezier(0.22, 1, 0.36, 1));
   const card1Opacity = interpolate(card1Progress, [0, 0.55, 1], [0, 1, 1], clamp);
   const card1TranslateX = interpolate(
     card1Progress,
     [0, 0.55, 0.75, 1],
-    [-350, 20, -8, 0],
+    [isPortrait ? -180 : -350, 20, -8, 0],
     clamp
   );
   const card1Scale = interpolate(
@@ -129,18 +128,18 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const card1Rotate = interpolate(
     card1Progress,
     [0, 0.55, 0.75, 1],
-    [-4, 0.5, 0, 0],
+    [isPortrait ? -2 : -4, 0.5, 0, 0],
     clamp
   );
   const card1Blur = interpolate(card1Progress, [0, 0.55, 1], [12, 0, 0], clamp);
 
-  // Card 2 entrance (0.9s start, 0.85s duration)
+  // Card 2 (vient du bas)
   const card2Progress = cardEntrance(0.9, 0.85, Easing.bezier(0.22, 1, 0.36, 1));
   const card2Opacity = interpolate(card2Progress, [0, 0.55, 1], [0, 1, 1], clamp);
   const card2TranslateY = interpolate(
     card2Progress,
     [0, 0.55, 0.75, 1],
-    [280, -18, 6, 0],
+    [isPortrait ? 150 : 280, -18, 6, 0],
     clamp
   );
   const card2Scale = interpolate(
@@ -151,13 +150,13 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   );
   const card2Blur = interpolate(card2Progress, [0, 0.55, 1], [10, 0, 0], clamp);
 
-  // Card 3 entrance (1.2s start, 0.8s duration)
+  // Card 3 (vient de droite)
   const card3Progress = cardEntrance(1.2, 0.8, Easing.bezier(0.22, 1, 0.36, 1));
   const card3Opacity = interpolate(card3Progress, [0, 0.55, 1], [0, 1, 1], clamp);
   const card3TranslateX = interpolate(
     card3Progress,
     [0, 0.55, 0.75, 1],
-    [350, -20, 8, 0],
+    [isPortrait ? 180 : 350, -20, 8, 0],
     clamp
   );
   const card3Scale = interpolate(
@@ -169,45 +168,45 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const card3Rotate = interpolate(
     card3Progress,
     [0, 0.55, 0.75, 1],
-    [4, -0.5, 0, 0],
+    [isPortrait ? 2 : 4, -0.5, 0, 0],
     clamp
   );
   const card3Blur = interpolate(card3Progress, [0, 0.55, 1], [12, 0, 0], clamp);
 
-  // Floating after entrance (start delays: card1 0.9s, card2 1.75s, card3 2.0s)
+  // Flottement après entrée (amplitudes réduites en portrait)
   const cardFloat = (startDelay: number, amplitudeY: number, amplitudeRotate: number) => {
     if (time < startDelay) return { y: 0, rotate: 0 };
-    const t = (time - startDelay) / 5; // 5s cycle
+    const t = (time - startDelay) / 5;
     const wave = Math.sin(t * Math.PI * 2);
-    return { y: wave * amplitudeY, rotate: wave * amplitudeRotate };
+    return { y: wave * (isPortrait ? amplitudeY * 0.6 : amplitudeY), rotate: wave * (isPortrait ? amplitudeRotate * 0.5 : amplitudeRotate) };
   };
   const float1 = cardFloat(0.9, 12, 0.4);
   const float2 = cardFloat(1.75, 16, -0.4);
   const float3 = cardFloat(2.0, 10, 0.6);
 
-  // Card glow (3s cycle, starting after entrance delay)
+  // Glow des cartes
   const cardGlow = (startDelay: number) => {
     if (time < startDelay) return { shadowScale: 0, extraBlur: 0 };
     const glow = pulseValue(time - startDelay, 3);
-    const shadowScale = interpolate(glow, [-1, 1], [0, 30]);
-    const extraBlur = interpolate(glow, [-1, 1], [0, 30]);
+    const shadowScale = interpolate(glow, [-1, 1], [0, isPortrait ? 20 : 30]);
+    const extraBlur = interpolate(glow, [-1, 1], [0, isPortrait ? 20 : 30]);
     return { shadowScale, extraBlur };
   };
   const glow1 = cardGlow(0.9);
   const glow2 = cardGlow(1.75);
   const glow3 = cardGlow(2.0);
 
-  // Logo breathing (3.5s cycle, continuous)
+  // Logo breathing
   const breath = pulseValue(time, 3.5);
   const logoScale = interpolate(breath, [-1, 1], [1, 1.07]);
   const logoTranslateY = interpolate(breath, [-1, 1], [0, -6]);
   const logoDropShadow = interpolate(breath, [-1, 1], [18, 28]);
 
-  // Divider pulse (2s cycle, with different delays)
+  // Divider pulse
   const dividerPulse = (delay: number) => {
-    if (time < delay) return { width: 70, opacity: 0.6 };
+    if (time < delay) return { width: isPortrait ? 50 : 70, opacity: 0.6 };
     const wave = pulseValue(time - delay, 2);
-    const width = interpolate(wave, [-1, 1], [70, 100]);
+    const width = interpolate(wave, [-1, 1], [isPortrait ? 50 : 70, isPortrait ? 80 : 100]);
     const opacityDiv = interpolate(wave, [-1, 1], [0.6, 1]);
     return { width, opacity: opacityDiv };
   };
@@ -215,7 +214,7 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const divider2 = dividerPulse(0.5);
   const divider3 = dividerPulse(1);
 
-  // Card badges (slide up, delays: 0.65s, 1.45s, 1.75s)
+  // Badges sous chaque carte (slide up)
   const badgeSlideUp = (startDelay: number) => {
     const start = startDelay * fps;
     const end = (startDelay + 0.4) * fps;
@@ -224,9 +223,7 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       ...clamp,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
-    const opacityBadge = progress;
-    const translateY = interpolate(progress, [0, 1], [20, 0]);
-    return { opacity: opacityBadge, translateY };
+    return { opacity: progress, translateY: interpolate(progress, [0, 1], [20, 0]) };
   };
   const badge1 = badgeSlideUp(0.65);
   const badge2 = badgeSlideUp(1.45);
@@ -235,17 +232,36 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   // ---------- Title ----------
   const titleEntranceProgress = cardEntrance(1.5, 0.9, Easing.bezier(0.2, 0.9, 0.3, 1.2));
   const titleOpacity = interpolate(titleEntranceProgress, [0, 0.45, 1], [0, 1, 1], clamp);
-  const titleTranslateY = interpolate(titleEntranceProgress, [0, 0.45, 1], [90, -10, 0], clamp);
+  const titleTranslateY = interpolate(titleEntranceProgress, [0, 0.45, 1], [isPortrait ? 50 : 90, -10, 0], clamp);
   const titleScale = interpolate(titleEntranceProgress, [0, 0.45, 1], [0.93, 1.01, 1], clamp);
   const titleBlur = interpolate(titleEntranceProgress, [0, 0.45, 1], [8, 0, 0], clamp);
 
-  // Title text shine (4s cycle)
   const titleShine = `${((time % 4) / 4) * 200}% 50%`;
 
-  // Word "claire" pulse (2.2s cycle)
   const wordPulse = pulseValue(time, 2.2);
   const wordScale = interpolate(wordPulse, [-1, 1], [1, 1.02]);
   const wordGlow = interpolate(wordPulse, [-1, 1], [0, 12]);
+
+  // Layout responsif
+  const contentWidth = width * (isPortrait ? 0.88 : 0.88);
+  const cardsGap = isPortrait ? height * 0.03 : 80;
+  const cardsDirection = isPortrait ? "column" : "row";
+  const cardWidth = isPortrait ? "100%" : "auto";
+  const cardMinWidth = isPortrait ? "auto" : 400;
+  const cardPadding = isPortrait ? "40px 30px" : "60px 80px";
+  const cardBorderRadius = isPortrait ? 30 : 40;
+  const cardGap = isPortrait ? 24 : 32;
+  const logoSize = isPortrait ? 140 : 180;
+  const cardTitleFontSize = isPortrait ? 38 : 50;
+  const badgeFontSizeCard = isPortrait ? 18 : 22;
+  const badgePaddingCard = isPortrait ? "8px 24px" : "10px 34px";
+  const titleFontSize = isPortrait ? 56 : 110;
+  const titleLineHeight = isPortrait ? 1.2 : 1.2;
+  const badgeMainFontSize = isPortrait ? 28 : 38;
+  const badgeMainPadding = isPortrait ? "14px 40px" : "20px 70px";
+  const badgeMainGap = isPortrait ? 20 : 28;
+  const badgeMainDotSize = isPortrait ? 16 : 20;
+  const mainGap = isPortrait ? height * 0.05 : 90;
 
   return (
     <div
@@ -262,71 +278,67 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         fontFamily: "'Sora', system-ui, -apple-system, Segoe UI, Roboto, Arial",
       }}
     >
-      {/* Background elements */}
+      {/* Grille dynamique */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundImage:
             "linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px)",
-          backgroundSize: "140px 140px",
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           backgroundPosition: `${gridOffset}px ${gridOffset}px`,
           pointerEvents: "none",
         }}
       />
 
+      {/* Orbes flottants */}
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
+          width: isPortrait ? 480 : 800,
+          height: isPortrait ? 480 : 800,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          top: "10%",
-          left: "-10%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.42,
+          top: isPortrait ? "4%" : "10%",
+          left: isPortrait ? "-12%" : "-10%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.2), rgba(37,99,235,0))",
-          transform: `translate(${orb1Progress * 40}px, ${
-            orb1Progress * 64
-          }px) scale(${1 + orb1Progress * 0.05})`,
+          transform: `translate(${orb1Progress * 40}px, ${orb1Progress * 64}px) scale(${1 + orb1Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 1100,
-          height: 1100,
+          width: isPortrait ? 720 : 1100,
+          height: isPortrait ? 720 : 1100,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          bottom: "-20%",
-          right: "-15%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.36,
+          bottom: isPortrait ? "-10%" : "-20%",
+          right: isPortrait ? "-20%" : "-15%",
           background:
             "radial-gradient(circle, rgba(15,43,109,0.18), rgba(15,43,109,0))",
-          transform: `translate(${orb2Progress * -45}px, ${
-            orb2Progress * -72
-          }px) scale(${1 + orb2Progress * 0.05})`,
+          transform: `translate(${orb2Progress * -45}px, ${orb2Progress * -72}px) scale(${1 + orb2Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 500,
-          height: 500,
+          width: isPortrait ? 360 : 500,
+          height: isPortrait ? 360 : 500,
           borderRadius: "50%",
-          filter: "blur(70px)",
-          opacity: 0.4,
-          top: "50%",
-          left: "70%",
+          filter: `blur(${isPortrait ? 55 : 70}px)`,
+          opacity: 0.38,
+          top: "48%",
+          left: isPortrait ? "58%" : "70%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.25), rgba(37,99,235,0))",
-          transform: `translate(${orb3Progress * 25}px, ${
-            orb3Progress * 40
-          }px) scale(${1 + orb3Progress * 0.05})`,
+          transform: `translate(${orb3Progress * 25}px, ${orb3Progress * 40}px) scale(${1 + orb3Progress * 0.05})`,
         }}
       />
 
+      {/* Lignes flottantes */}
       <div
         style={{
           position: "absolute",
@@ -334,9 +346,9 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "35%",
+          top: isPortrait ? "28%" : "35%",
           left: "-50%",
-          transform: `translateX(${line1Translate}%) rotate(8deg)`,
+          transform: `translateX(${line1Translate}%) rotate(${isPortrait ? 5 : 8}deg)`,
           opacity: line1Opacity,
           zIndex: 1,
         }}
@@ -348,14 +360,15 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "70%",
+          top: isPortrait ? "68%" : "70%",
           left: "-40%",
-          transform: `translateX(${line2Translate}%) rotate(-5deg)`,
+          transform: `translateX(${line2Translate}%) rotate(${isPortrait ? -3 : -5}deg)`,
           opacity: line2Opacity,
           zIndex: 1,
         }}
       />
 
+      {/* Étincelles */}
       {sparks.map((spark, i) => {
         const sparkProgress = loop(time + spark.delay, 3);
         const sparkOpacity = interpolate(
@@ -388,11 +401,12 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         );
       })}
 
+      {/* Anneau pulsant central */}
       <div
         style={{
           position: "absolute",
-          width: 1200,
-          height: 1200,
+          width: isPortrait ? 760 : 1200,
+          height: isPortrait ? 760 : 1200,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%)",
@@ -404,35 +418,34 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         }}
       />
 
-      {/* Main content */}
+      {/* Contenu principal centré */}
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 90,
-          zIndex: 20,
-          maxWidth: 3200,
-          width: "88%",
           position: "absolute",
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
-          padding: "60px 0",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: mainGap,
+          zIndex: 20,
+          width: contentWidth,
+          maxWidth: 3200,
         }}
       >
-        {/* Badge */}
+        {/* Badge principal */}
         <div
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 28,
+            gap: badgeMainGap,
             background: "rgba(224,237,255,0.75)",
             backdropFilter: "blur(12px)",
             border: `2px solid rgba(37,99,235,${badgeBorderOpacity})`,
             borderRadius: 120,
-            padding: "20px 70px",
+            padding: badgeMainPadding,
             boxShadow: `0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 0 0 ${badgeRingSize}px rgba(37,99,235,0.2)`,
             opacity: badgeOpacity,
             transform: `translateY(${badgeTranslateY}px) scale(${badgeScale})`,
@@ -441,20 +454,20 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         >
           <div
             style={{
-              width: 20,
-              height: 20,
+              width: badgeMainDotSize,
+              height: badgeMainDotSize,
               background: "#2563EB",
               borderRadius: "50%",
-              opacity: dotOpacity,
+              opacity: dotOpacityVal,
               boxShadow: `0 0 12px #2563EB, 0 0 0 ${dotShadow}px rgba(37,99,235,0.4)`,
               transform: `scale(${dotScale})`,
             }}
           />
           <span
             style={{
-              fontSize: 38,
+              fontSize: badgeMainFontSize,
               fontWeight: 700,
-              letterSpacing: 6,
+              letterSpacing: isPortrait ? 4 : 6,
               textTransform: "uppercase",
               background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
               WebkitBackgroundClip: "text",
@@ -466,27 +479,31 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           </span>
         </div>
 
-        {/* Cards container */}
+        {/* Container des 3 cartes (flex direction responsive) */}
         <div
           style={{
             display: "flex",
-            gap: 80,
+            flexDirection: cardsDirection,
+            gap: cardsGap,
             alignItems: "stretch",
+            width: "100%",
           }}
         >
-          {/* Card 1 */}
+          {/* Carte 1 - Claire */}
           <div
             style={{
+              flex: 1,
               background: "rgba(224,237,255,0.7)",
               backdropFilter: "blur(12px)",
               border: "2px solid rgba(37,99,235,0.5)",
-              borderRadius: 40,
-              padding: "60px 80px",
+              borderRadius: cardBorderRadius,
+              padding: cardPadding,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 32,
-              minWidth: 400,
+              gap: cardGap,
+              width: cardWidth,
+              minWidth: cardMinWidth,
               position: "relative",
               overflow: "hidden",
               boxShadow: `0 15px 30px -10px rgba(0,0,0,0.1), 0 0 ${glow1.shadowScale}px rgba(37,99,235,0.08)`,
@@ -500,7 +517,7 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 position: "absolute",
                 top: 22,
                 right: 32,
-                fontSize: 32,
+                fontSize: isPortrait ? 24 : 32,
                 fontWeight: 800,
                 color: "rgba(37,99,235,0.15)",
                 fontFamily: "'Sora', sans-serif",
@@ -508,20 +525,14 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               01
             </div>
-            <img
+            <Img
               src={staticFile("claire.png")}
               style={{
-                width: 180,
-                height: 180,
+                width: logoSize,
+                height: logoSize,
                 objectFit: "contain",
                 filter: `drop-shadow(0 ${logoDropShadow}px 20px rgba(37,99,235,0.18))`,
                 transform: `scale(${logoScale}) translateY(${logoTranslateY}px)`,
-              }}
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                if (e.currentTarget.nextSibling) {
-                  (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
-                }
               }}
             />
             <div
@@ -535,7 +546,7 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             />
             <div
               style={{
-                fontSize: 50,
+                fontSize: cardTitleFontSize,
                 fontWeight: 700,
                 background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
                 WebkitBackgroundClip: "text",
@@ -554,10 +565,10 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 transform: `translateX(-50%) translateY(${badge1.translateY}px)`,
                 background: "#2563EB",
                 color: "white",
-                fontSize: 22,
+                fontSize: badgeFontSizeCard,
                 fontWeight: 700,
                 letterSpacing: 3,
-                padding: "10px 34px",
+                padding: badgePaddingCard,
                 borderRadius: "40px 40px 0 0",
                 whiteSpace: "nowrap",
                 opacity: badge1.opacity,
@@ -567,19 +578,21 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             </div>
           </div>
 
-          {/* Card 2 */}
+          {/* Carte 2 - Structurée */}
           <div
             style={{
+              flex: 1,
               background: "rgba(224,237,255,0.7)",
               backdropFilter: "blur(12px)",
               border: "2px solid rgba(37,99,235,0.2)",
-              borderRadius: 40,
-              padding: "60px 80px",
+              borderRadius: cardBorderRadius,
+              padding: cardPadding,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 32,
-              minWidth: 400,
+              gap: cardGap,
+              width: cardWidth,
+              minWidth: cardMinWidth,
               position: "relative",
               overflow: "hidden",
               boxShadow: `0 15px 30px -10px rgba(0,0,0,0.1), 0 0 ${glow2.shadowScale}px rgba(37,99,235,0.08)`,
@@ -593,7 +606,7 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 position: "absolute",
                 top: 22,
                 right: 32,
-                fontSize: 32,
+                fontSize: isPortrait ? 24 : 32,
                 fontWeight: 800,
                 color: "rgba(37,99,235,0.15)",
                 fontFamily: "'Sora', sans-serif",
@@ -601,20 +614,14 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               02
             </div>
-            <img
+            <Img
               src={staticFile("structuree.png")}
               style={{
-                width: 180,
-                height: 180,
+                width: logoSize,
+                height: logoSize,
                 objectFit: "contain",
                 filter: `drop-shadow(0 ${logoDropShadow}px 20px rgba(37,99,235,0.18))`,
                 transform: `scale(${logoScale}) translateY(${logoTranslateY}px)`,
-              }}
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                if (e.currentTarget.nextSibling) {
-                  (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
-                }
               }}
             />
             <div
@@ -628,7 +635,7 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             />
             <div
               style={{
-                fontSize: 50,
+                fontSize: cardTitleFontSize,
                 fontWeight: 700,
                 background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
                 WebkitBackgroundClip: "text",
@@ -647,10 +654,10 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 transform: `translateX(-50%) translateY(${badge2.translateY}px)`,
                 background: "#2563EB",
                 color: "white",
-                fontSize: 22,
+                fontSize: badgeFontSizeCard,
                 fontWeight: 700,
                 letterSpacing: 3,
-                padding: "10px 34px",
+                padding: badgePaddingCard,
                 borderRadius: "40px 40px 0 0",
                 whiteSpace: "nowrap",
                 opacity: badge2.opacity,
@@ -660,19 +667,21 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             </div>
           </div>
 
-          {/* Card 3 */}
+          {/* Carte 3 - Tracée */}
           <div
             style={{
+              flex: 1,
               background: "rgba(224,237,255,0.7)",
               backdropFilter: "blur(12px)",
               border: "2px solid rgba(37,99,235,0.2)",
-              borderRadius: 40,
-              padding: "60px 80px",
+              borderRadius: cardBorderRadius,
+              padding: cardPadding,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 32,
-              minWidth: 400,
+              gap: cardGap,
+              width: cardWidth,
+              minWidth: cardMinWidth,
               position: "relative",
               overflow: "hidden",
               boxShadow: `0 15px 30px -10px rgba(0,0,0,0.1), 0 0 ${glow3.shadowScale}px rgba(37,99,235,0.08)`,
@@ -686,7 +695,7 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 position: "absolute",
                 top: 22,
                 right: 32,
-                fontSize: 32,
+                fontSize: isPortrait ? 24 : 32,
                 fontWeight: 800,
                 color: "rgba(37,99,235,0.15)",
                 fontFamily: "'Sora', sans-serif",
@@ -694,20 +703,14 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             >
               03
             </div>
-            <img
+            <Img
               src={staticFile("tracee.png")}
               style={{
-                width: 180,
-                height: 180,
+                width: logoSize,
+                height: logoSize,
                 objectFit: "contain",
                 filter: `drop-shadow(0 ${logoDropShadow}px 20px rgba(37,99,235,0.18))`,
                 transform: `scale(${logoScale}) translateY(${logoTranslateY}px)`,
-              }}
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                if (e.currentTarget.nextSibling) {
-                  (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
-                }
               }}
             />
             <div
@@ -721,7 +724,7 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             />
             <div
               style={{
-                fontSize: 50,
+                fontSize: cardTitleFontSize,
                 fontWeight: 700,
                 background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
                 WebkitBackgroundClip: "text",
@@ -740,10 +743,10 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 transform: `translateX(-50%) translateY(${badge3.translateY}px)`,
                 background: "#2563EB",
                 color: "white",
-                fontSize: 22,
+                fontSize: badgeFontSizeCard,
                 fontWeight: 700,
                 letterSpacing: 3,
-                padding: "10px 34px",
+                padding: badgePaddingCard,
                 borderRadius: "40px 40px 0 0",
                 whiteSpace: "nowrap",
                 opacity: badge3.opacity,
@@ -754,12 +757,12 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           </div>
         </div>
 
-        {/* Title */}
+        {/* Titre final */}
         <div
           style={{
-            fontSize: 110,
+            fontSize: titleFontSize,
             fontWeight: 800,
-            lineHeight: 1.2,
+            lineHeight: titleLineHeight,
             textAlign: "center",
             letterSpacing: "-0.02em",
             background:
@@ -769,8 +772,6 @@ export const Scene11 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             color: "transparent",
-            maxWidth: 2800,
-            margin: "0 auto",
             opacity: titleOpacity,
             transform: `translateY(${titleTranslateY}px) scale(${titleScale})`,
             filter: `blur(${titleBlur}px)`,

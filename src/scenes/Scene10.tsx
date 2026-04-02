@@ -22,7 +22,8 @@ const pulseValue = (time: number, duration: number, phase = 0) =>
 
 export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const time = frame / fps;
   const duration = outFrame - inFrame;
 
@@ -34,12 +35,13 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const outZoom = interpolate(
     frame,
     [duration - crossfadeFrames, duration],
-    [1, 1.06],
+    [1, 1.05],
     clamp
   );
 
-  // ---------- Background elements (same as Scene1) ----------
-  const gridOffset = (time / 18) * 140;
+  // ---------- Background elements responsives ----------
+  const gridSize = isPortrait ? 96 : 140;
+  const gridOffset = (time / 18) * gridSize;
 
   const orb1Progress = pulseValue(time, 22);
   const orb2Progress = pulseValue(time, 26, 3);
@@ -61,11 +63,11 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   );
 
   const sparks = [
-    { top: "20%", left: "15%", size: 10, delay: 0 },
-    { top: "65%", left: "85%", size: 6, delay: 0.7 },
-    { top: "80%", left: "30%", size: 8, delay: 1.2 },
-    { top: "40%", left: "72%", size: 6, delay: 0.3 },
-    { top: "15%", left: "88%", size: 6, delay: 1.8 },
+    { top: "20%", left: "15%", size: isPortrait ? 8 : 10, delay: 0 },
+    { top: "65%", left: "85%", size: isPortrait ? 5 : 6, delay: 0.7 },
+    { top: "80%", left: "30%", size: isPortrait ? 6 : 8, delay: 1.2 },
+    { top: "40%", left: "72%", size: isPortrait ? 5 : 6, delay: 0.3 },
+    { top: "15%", left: "88%", size: isPortrait ? 5 : 6, delay: 1.8 },
   ];
 
   const pulseRingWave = pulseValue(time, 5);
@@ -80,30 +82,29 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       ...clamp,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
-    const opacity = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
+    const op = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
     const translateX = interpolate(
       progress,
       [0, 0.6, 0.8, 1],
-      [-260, 14, -4, 0],
+      [isPortrait ? -120 : -260, 14, -4, 0],
       clamp
     );
     const scale = interpolate(progress, [0, 0.6, 0.8, 1], [0.92, 1.01, 0.998, 1], clamp);
     const blur = interpolate(progress, [0, 0.6, 1], [8, 0, 0], clamp);
-    return { opacity, translateX, scale, blur };
+    return { opacity: op, translateX, scale, blur };
   };
 
   // ---------- Badge entrance + continuous glow ----------
   const badgeEntrance = slideFromLeft(0, 0.75);
-  // Badge continuous glow (starts after 0.75s)
   const badgePulse = pulseValue(time - 0.75, 2.8);
-  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, 5]);
+  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, isPortrait ? 8 : 5]);
   const badgeBorderOpacity = interpolate(badgePulse, [-1, 1], [0.5, 0.9]);
 
-  // Dot inside badge (continuous, 1.6s cycle)
+  // Dot inside badge
   const dotPulse = pulseValue(time, 1.6);
   const dotScale = interpolate(dotPulse, [-1, 1], [1, 1.2]);
   const dotShadow = interpolate(dotPulse, [-1, 1], [0, 8]);
-  const dotOpacity = interpolate(dotPulse, [-1, 1], [1, 0.9]);
+  const dotOpacityVal = interpolate(dotPulse, [-1, 1], [1, 0.9]);
 
   // ---------- Title entrance + continuous shine + word pulse ----------
   const titleEntrance = slideFromLeft(0.15, 0.85);
@@ -123,16 +124,16 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       ...clamp,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
-    const opacity = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
+    const op = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
     const translateX = interpolate(
       progress,
       [0, 0.6, 0.8, 1],
-      [260, -14, 4, 0],
+      [isPortrait ? 120 : 260, -14, 4, 0],
       clamp
     );
     const scale = interpolate(progress, [0, 0.6, 0.8, 1], [0.92, 1.01, 0.998, 1], clamp);
     const blur = interpolate(progress, [0, 0.6, 1], [8, 0, 0], clamp);
-    return { opacity, translateX, scale, blur };
+    return { opacity: op, translateX, scale, blur };
   };
   const panelEntrance = slideFromRight(0.1, 0.9);
 
@@ -155,11 +156,11 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       ...clamp,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
-    const opacity = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
+    const op = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
     const translateY = interpolate(progress, [0, 0.6, 1], [80, -6, 0], clamp);
     const scale = interpolate(progress, [0, 0.6, 1], [0.96, 1.01, 1], clamp);
     const blur = interpolate(progress, [0, 0.6, 1], [6, 0, 0], clamp);
-    return { opacity, translateY, scale, blur };
+    return { opacity: op, translateY, scale, blur };
   };
   const trackerEntrance = slideUp(0.35, 0.85);
 
@@ -177,7 +178,7 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     progressFillWidth = interpolate(progress, [0, 1], [0, 72]);
   }
 
-  // Steps: staggered pop animations
+  // Steps staggered pop
   const stepPop = (startDelaySec: number, durationSec: number) => {
     const startFrame = startDelaySec * fps;
     const endFrame = (startDelaySec + durationSec) * fps;
@@ -186,10 +187,10 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       ...clamp,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
     });
-    const opacity = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
+    const op = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
     const translateY = interpolate(progress, [0, 0.6, 1], [30, -4, 0], clamp);
     const scale = interpolate(progress, [0, 0.6, 1], [0.88, 1.03, 1], clamp);
-    return { opacity, transform: `translateY(${translateY}px) scale(${scale})` };
+    return { opacity: op, transform: `translateY(${translateY}px) scale(${scale})` };
   };
 
   const step1Pop = stepPop(0.7, 0.5);
@@ -205,15 +206,44 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     const scale = interpolate(wave, [-1, 1], [1, scaleFactor]);
     return { shadowScale, scale };
   };
-  const iconDoneGlow = iconGlow(2.5); // iconGlowBlue: box-shadow scale 6->12, no scale change
-  const iconActiveGlow = iconGlow(1.4, 1.06); // iconGlowActive: scale + shadow
-  const iconWarnGlow = iconGlow(1.4, 1.06); // same as active but with warn color
+  const iconDoneGlow = iconGlow(2.5);
+  const iconActiveGlow = iconGlow(1.4, 1.06);
+  const iconWarnGlow = iconGlow(1.4, 1.06);
   const activeBadgePing = pulseValue(time, 1.4);
   const badgePingShadow = interpolate(activeBadgePing, [-1, 1], [0, 8]);
-
-  // For step 4 (warn) we also have warn badge ping
   const warnBadgePing = pulseValue(time, 1.4);
   const warnBadgePingShadow = interpolate(warnBadgePing, [-1, 1], [0, 8]);
+
+  // Layout responsive
+  const contentWidth = width * (isPortrait ? 0.88 : 0.92);
+  const mainGap = isPortrait ? height * 0.05 : 180;
+  const topSectionGap = isPortrait ? height * 0.04 : 60;
+  const trackerMarginTop = isPortrait ? height * 0.04 : 80;
+  const leftColumnGap = isPortrait ? height * 0.03 : 60;
+
+  // Tailles dynamiques
+  const badgeFontSize = isPortrait ? 24 : 34;
+  const badgePadding = isPortrait ? "12px 32px" : "18px 56px";
+  const badgeGap = isPortrait ? 18 : 28;
+  const badgeDotSize = isPortrait ? 14 : 20;
+  const titleFontSize = isPortrait ? 56 : 100;
+  const titleLineHeight = isPortrait ? 1.2 : 1.1;
+  const subtitleFontSize = isPortrait ? 28 : 48;
+  const rightPanelWidth = isPortrait ? "100%" : "900px";
+  const rightPanelPadding = isPortrait ? 30 : 60;
+  const rightPanelBorderRadius = isPortrait ? 30 : 40;
+  const dossierFontSize = isPortrait ? 28 : 40;
+  const statusFontSize = isPortrait ? 22 : 32;
+  const stepCircleSize = isPortrait ? 60 : 80;
+  const stepIconFontSize = isPortrait ? 28 : 36;
+  const stepTitleFontSize = isPortrait ? 22 : 30;
+  const stepDateFontSize = isPortrait ? 18 : 24;
+  const badgeStepFontSize = isPortrait ? 16 : 20;
+  const trackerTitleFontSize = isPortrait ? 24 : 34;
+  const trackerPadding = isPortrait ? "30px 20px" : "50px 80px";
+  const trackerBorderRadius = isPortrait ? 20 : 30;
+  const progressRailHeight = isPortrait ? 6 : 8;
+  const dotStepSize = isPortrait ? 14 : 18;
 
   return (
     <div
@@ -241,7 +271,7 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           inset: 0,
           backgroundImage:
             "linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px)",
-          backgroundSize: "140px 140px",
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           backgroundPosition: `${gridOffset}px ${gridOffset}px`,
           pointerEvents: "none",
         }}
@@ -250,13 +280,13 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
+          width: isPortrait ? 480 : 800,
+          height: isPortrait ? 480 : 800,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          top: "10%",
-          left: "-10%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.42,
+          top: isPortrait ? "4%" : "10%",
+          left: isPortrait ? "-12%" : "-10%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.2), rgba(37,99,235,0))",
           transform: `translate(${orb1Progress * 40}px, ${
@@ -267,13 +297,13 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 1100,
-          height: 1100,
+          width: isPortrait ? 720 : 1100,
+          height: isPortrait ? 720 : 1100,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          bottom: "-20%",
-          right: "-15%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.36,
+          bottom: isPortrait ? "-10%" : "-20%",
+          right: isPortrait ? "-20%" : "-15%",
           background:
             "radial-gradient(circle, rgba(15,43,109,0.18), rgba(15,43,109,0))",
           transform: `translate(${orb2Progress * -45}px, ${
@@ -284,13 +314,13 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 500,
-          height: 500,
+          width: isPortrait ? 360 : 500,
+          height: isPortrait ? 360 : 500,
           borderRadius: "50%",
-          filter: "blur(70px)",
-          opacity: 0.4,
-          top: "50%",
-          left: "70%",
+          filter: `blur(${isPortrait ? 55 : 70}px)`,
+          opacity: 0.38,
+          top: "48%",
+          left: isPortrait ? "58%" : "70%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.25), rgba(37,99,235,0))",
           transform: `translate(${orb3Progress * 25}px, ${
@@ -306,9 +336,9 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "35%",
+          top: isPortrait ? "28%" : "35%",
           left: "-50%",
-          transform: `translateX(${line1Translate}%) rotate(8deg)`,
+          transform: `translateX(${line1Translate}%) rotate(${isPortrait ? 5 : 8}deg)`,
           opacity: line1Opacity,
           zIndex: 1,
         }}
@@ -320,9 +350,9 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "70%",
+          top: isPortrait ? "68%" : "70%",
           left: "-40%",
-          transform: `translateX(${line2Translate}%) rotate(-5deg)`,
+          transform: `translateX(${line2Translate}%) rotate(${isPortrait ? -3 : -5}deg)`,
           opacity: line2Opacity,
           zIndex: 1,
         }}
@@ -363,8 +393,8 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 1200,
-          height: 1200,
+          width: isPortrait ? 760 : 1200,
+          height: isPortrait ? 760 : 1200,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%)",
@@ -376,602 +406,594 @@ export const Scene10 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         }}
       />
 
-      {/* Main content (top section) */}
+      {/* Main content wrapper responsif */}
       <div
         style={{
+          width: contentWidth,
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          gap: 180,
-          zIndex: 20,
-          padding: "0 280px",
-          width: "100%",
-          position: "relative",
-          flex: "0 0 auto",
+          justifyContent: "center",
+          gap: trackerMarginTop,
         }}
       >
-        {/* Left column */}
+        {/* Top section : left column + right panel (en ligne ou colonne) */}
         <div
           style={{
-            flex: 1,
             display: "flex",
-            flexDirection: "column",
-            gap: 60,
+            flexDirection: isPortrait ? "column" : "row",
+            alignItems: "center",
+            gap: mainGap,
+            width: "100%",
           }}
         >
-          {/* Badge */}
+          {/* Left column */}
           <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 28,
-              background: "rgba(224,237,255,0.75)",
+              flex: isPortrait ? "0 0 auto" : 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: leftColumnGap,
+              width: "100%",
+              textAlign: isPortrait ? "center" : "left",
+              alignItems: isPortrait ? "center" : "flex-start",
+            }}
+          >
+            {/* Badge */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: badgeGap,
+                background: "rgba(224,237,255,0.75)",
+                backdropFilter: "blur(12px)",
+                border: `2px solid rgba(37,99,235,${badgeBorderOpacity})`,
+                borderRadius: 120,
+                padding: badgePadding,
+                width: "fit-content",
+                opacity: badgeEntrance.opacity,
+                transform: `translateX(${badgeEntrance.translateX}px) scale(${badgeEntrance.scale})`,
+                filter: `blur(${badgeEntrance.blur}px)`,
+                boxShadow: `0 15px 30px -10px rgba(0,0,0,0.1), 0 0 0 ${badgeRingSize}px rgba(37,99,235,0.2)`,
+              }}
+            >
+              <div
+                style={{
+                  width: badgeDotSize,
+                  height: badgeDotSize,
+                  background: "#2563EB",
+                  borderRadius: "50%",
+                  opacity: dotOpacityVal,
+                  boxShadow: `0 0 12px #2563EB, 0 0 0 ${dotShadow}px rgba(37,99,235,0.4)`,
+                  transform: `scale(${dotScale})`,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: badgeFontSize,
+                  fontWeight: 700,
+                  letterSpacing: isPortrait ? 4 : 6,
+                  textTransform: "uppercase",
+                  background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                TEMPS RÉEL
+              </span>
+            </div>
+
+            {/* Title */}
+            <div
+              style={{
+                fontSize: titleFontSize,
+                fontWeight: 800,
+                lineHeight: titleLineHeight,
+                background:
+                  "linear-gradient(130deg, #0F2B6D 0%, #2563EB 45%, #3B82F6 65%, #0F2B6D 100%)",
+                backgroundSize: "200% auto",
+                backgroundPosition: titleShine,
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+                opacity: titleEntrance.opacity,
+                transform: `translateX(${titleEntrance.translateX}px) scale(${titleEntrance.scale})`,
+                filter: `blur(${titleEntrance.blur}px)`,
+              }}
+            >
+              Suivez tous vos dossiers<br />
+              en{" "}
+              <span
+                style={{
+                  display: "inline-block",
+                  background: "linear-gradient(135deg, #2563EB, #1E3A8A)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  fontWeight: 900,
+                  transform: `scale(${wordScale})`,
+                  textShadow: `0 0 ${wordGlow}px rgba(37,99,235,0.6)`,
+                }}
+              >
+                temps réel
+              </span>
+              .
+            </div>
+
+            {/* Subtitle */}
+            <div
+              style={{
+                fontSize: subtitleFontSize,
+                fontWeight: 300,
+                color: "#2C3E66",
+                lineHeight: 1.2,
+                opacity: subtitleEntrance.opacity,
+                transform: `translateX(${subtitleEntrance.translateX}px) scale(${subtitleEntrance.scale})`,
+                filter: `blur(${subtitleEntrance.blur}px)`,
+              }}
+            >
+              Accès instantané · Vue globale · Zéro angle mort
+            </div>
+          </div>
+
+          {/* Right panel */}
+          <div
+            style={{
+              flex: isPortrait ? "0 0 auto" : "0 0 auto",
+              width: rightPanelWidth,
+              background: "rgba(224,237,255,0.7)",
               backdropFilter: "blur(12px)",
-              border: `2px solid rgba(37,99,235,${badgeBorderOpacity})`,
-              borderRadius: 120,
-              padding: "18px 56px",
-              width: "fit-content",
-              opacity: badgeEntrance.opacity,
-              transform: `translateX(${badgeEntrance.translateX}px) scale(${badgeEntrance.scale})`,
-              filter: `blur(${badgeEntrance.blur}px)`,
-              boxShadow: `0 15px 30px -10px rgba(0,0,0,0.1), 0 0 0 ${badgeRingSize}px rgba(37,99,235,0.2)`,
+              borderRadius: rightPanelBorderRadius,
+              padding: rightPanelPadding,
+              border: "2px solid rgba(37,99,235,0.3)",
+              boxShadow: "0 25px 45px -12px rgba(0,0,0,0.15)",
+              opacity: panelEntrance.opacity,
+              transform: `translateX(${panelEntrance.translateX}px) scale(${panelEntrance.scale})`,
+              filter: `blur(${panelEntrance.blur}px)`,
             }}
           >
             <div
               style={{
-                width: 20,
-                height: 20,
-                background: "#2563EB",
-                borderRadius: "50%",
-                opacity: dotOpacity,
-                boxShadow: `0 0 12px #2563EB, 0 0 0 ${dotShadow}px rgba(37,99,235,0.4)`,
-                transform: `scale(${dotScale})`,
-              }}
-            />
-            <span
-              style={{
-                fontSize: 34,
-                fontWeight: 700,
-                letterSpacing: 6,
-                textTransform: "uppercase",
-                background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
+                display: "flex",
+                alignItems: "center",
+                gap: isPortrait ? 20 : 36,
+                padding: `${isPortrait ? 20 : 40}px 0`,
+                borderBottom: "2px solid rgba(30,58,138,0.1)",
               }}
             >
-              TEMPS RÉEL
-            </span>
-          </div>
-
-          {/* Title */}
-          <div
-            style={{
-              fontSize: 100,
-              fontWeight: 800,
-              lineHeight: 1.1,
-              background:
-                "linear-gradient(130deg, #0F2B6D 0%, #2563EB 45%, #3B82F6 65%, #0F2B6D 100%)",
-              backgroundSize: "200% auto",
-              backgroundPosition: titleShine,
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-              opacity: titleEntrance.opacity,
-              transform: `translateX(${titleEntrance.translateX}px) scale(${titleEntrance.scale})`,
-              filter: `blur(${titleEntrance.blur}px)`,
-            }}
-          >
-            Suivez tous vos dossiers<br />
-            en{" "}
-            <span
+              <div
+                style={{
+                  width: isPortrait ? 18 : 24,
+                  height: isPortrait ? 18 : 24,
+                  borderRadius: "50%",
+                  background: "#22C55E",
+                  boxShadow: `0 0 8px #22C55E, 0 0 0 ${dotGreen.shadowScale}px rgba(255,255,255,0.2)`,
+                  transform: `scale(${dotGreen.scale})`,
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: dossierFontSize, fontWeight: 600, color: "#0F2B6D", marginBottom: isPortrait ? 4 : 8 }}>
+                  Dossier #2847
+                </div>
+                <div style={{ fontSize: statusFontSize, color: "#2C3E66" }}>Arrivée Dakar – En transit</div>
+              </div>
+            </div>
+            <div
               style={{
-                display: "inline-block",
-                background: "linear-gradient(135deg, #2563EB, #1E3A8A)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-                fontWeight: 900,
-                transform: `scale(${wordScale})`,
-                textShadow: `0 0 ${wordGlow}px rgba(37,99,235,0.6)`,
+                display: "flex",
+                alignItems: "center",
+                gap: isPortrait ? 20 : 36,
+                padding: `${isPortrait ? 20 : 40}px 0`,
+                borderBottom: "2px solid rgba(30,58,138,0.1)",
               }}
             >
-              temps réel
-            </span>
-            .
+              <div
+                style={{
+                  width: isPortrait ? 18 : 24,
+                  height: isPortrait ? 18 : 24,
+                  borderRadius: "50%",
+                  background: "#F59E0B",
+                  boxShadow: `0 0 8px #F59E0B, 0 0 0 ${dotOrange.shadowScale}px rgba(255,255,255,0.2)`,
+                  transform: `scale(${dotOrange.scale})`,
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: dossierFontSize, fontWeight: 600, color: "#0F2B6D", marginBottom: isPortrait ? 4 : 8 }}>
+                  Dossier #2846
+                </div>
+                <div style={{ fontSize: statusFontSize, color: "#2C3E66" }}>Dédouanement – En attente</div>
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: isPortrait ? 20 : 36,
+                padding: `${isPortrait ? 20 : 40}px 0`,
+              }}
+            >
+              <div
+                style={{
+                  width: isPortrait ? 18 : 24,
+                  height: isPortrait ? 18 : 24,
+                  borderRadius: "50%",
+                  background: "#1D4ED8",
+                  boxShadow: `0 0 8px #1D4ED8, 0 0 0 ${dotBlue.shadowScale}px rgba(255,255,255,0.2)`,
+                  transform: `scale(${dotBlue.scale})`,
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: dossierFontSize, fontWeight: 600, color: "#0F2B6D", marginBottom: isPortrait ? 4 : 8 }}>
+                  Dossier #2845
+                </div>
+                <div style={{ fontSize: statusFontSize, color: "#2C3E66" }}>Livraison – Confirmée</div>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Subtitle */}
+        {/* Tracker section */}
+        <div
+          style={{
+            width: "100%",
+            opacity: trackerEntrance.opacity,
+            transform: `translateY(${trackerEntrance.translateY}px) scale(${trackerEntrance.scale})`,
+            filter: `blur(${trackerEntrance.blur}px)`,
+          }}
+        >
           <div
             style={{
-              fontSize: 48,
-              fontWeight: 300,
+              fontSize: trackerTitleFontSize,
+              fontWeight: 600,
               color: "#2C3E66",
-              lineHeight: 1.2,
-              opacity: subtitleEntrance.opacity,
-              transform: `translateX(${subtitleEntrance.translateX}px) scale(${subtitleEntrance.scale})`,
-              filter: `blur(${subtitleEntrance.blur}px)`,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              marginBottom: isPortrait ? 20 : 40,
+              textAlign: isPortrait ? "center" : "left",
             }}
           >
-            Accès instantané · Vue globale · Zéro angle mort
+            Suivi · Dossier #2847 — Shanghai → Dakar
           </div>
-        </div>
 
-        {/* Right panel */}
-        <div
-          style={{
-            flex: "0 0 900px",
-            background: "rgba(224,237,255,0.7)",
-            backdropFilter: "blur(12px)",
-            borderRadius: 40,
-            padding: 60,
-            border: "2px solid rgba(37,99,235,0.3)",
-            boxShadow: "0 25px 45px -12px rgba(0,0,0,0.15)",
-            opacity: panelEntrance.opacity,
-            transform: `translateX(${panelEntrance.translateX}px) scale(${panelEntrance.scale})`,
-            filter: `blur(${panelEntrance.blur}px)`,
-          }}
-        >
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 36,
-              padding: "40px 0",
-              borderBottom: "2px solid rgba(30,58,138,0.1)",
-            }}
-          >
-            <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: "#22C55E",
-                boxShadow: `0 0 8px #22C55E, 0 0 0 ${dotGreen.shadowScale}px rgba(255,255,255,0.2)`,
-                transform: `scale(${dotGreen.scale})`,
-                flexShrink: 0,
-              }}
-            />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 40, fontWeight: 600, color: "#0F2B6D", marginBottom: 8 }}>
-                Dossier #2847
-              </div>
-              <div style={{ fontSize: 32, color: "#2C3E66" }}>Arrivée Dakar – En transit</div>
-            </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 36,
-              padding: "40px 0",
-              borderBottom: "2px solid rgba(30,58,138,0.1)",
-            }}
-          >
-            <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: "#F59E0B",
-                boxShadow: `0 0 8px #F59E0B, 0 0 0 ${dotOrange.shadowScale}px rgba(255,255,255,0.2)`,
-                transform: `scale(${dotOrange.scale})`,
-                flexShrink: 0,
-              }}
-            />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 40, fontWeight: 600, color: "#0F2B6D", marginBottom: 8 }}>
-                Dossier #2846
-              </div>
-              <div style={{ fontSize: 32, color: "#2C3E66" }}>Dédouanement – En attente</div>
-            </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 36,
-              padding: "40px 0",
-            }}
-          >
-            <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: "#1D4ED8",
-                boxShadow: `0 0 8px #1D4ED8, 0 0 0 ${dotBlue.shadowScale}px rgba(255,255,255,0.2)`,
-                transform: `scale(${dotBlue.scale})`,
-                flexShrink: 0,
-              }}
-            />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 40, fontWeight: 600, color: "#0F2B6D", marginBottom: 8 }}>
-                Dossier #2845
-              </div>
-              <div style={{ fontSize: 32, color: "#2C3E66" }}>Livraison – Confirmée</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tracker section */}
-      <div
-        style={{
-          zIndex: 20,
-          width: "100%",
-          padding: "0 280px",
-          flex: "0 0 auto",
-          marginTop: 80,
-          opacity: trackerEntrance.opacity,
-          transform: `translateY(${trackerEntrance.translateY}px) scale(${trackerEntrance.scale})`,
-          filter: `blur(${trackerEntrance.blur}px)`,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 34,
-            fontWeight: 600,
-            color: "#2C3E66",
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            marginBottom: 40,
-          }}
-        >
-          Suivi · Dossier #2847 — Shanghai → Dakar
-        </div>
-
-        <div
-          style={{
-            background: "rgba(224,237,255,0.65)",
-            backdropFilter: "blur(12px)",
-            border: "2px solid rgba(37,99,235,0.2)",
-            borderRadius: 30,
-            padding: "50px 80px",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {/* Progress rail */}
-          <div
-            style={{
+              background: "rgba(224,237,255,0.65)",
+              backdropFilter: "blur(12px)",
+              border: "2px solid rgba(37,99,235,0.2)",
+              borderRadius: trackerBorderRadius,
+              padding: trackerPadding,
               position: "relative",
-              height: 8,
-              background: "rgba(37,99,235,0.12)",
-              borderRadius: 8,
-              marginBottom: 50,
+              overflow: "hidden",
             }}
           >
+            {/* Progress rail */}
             <div
               style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                height: "100%",
-                width: `${progressFillWidth}%`,
-                background: "linear-gradient(90deg, #1E3A8A, #2563EB, #60A5FA)",
-                borderRadius: 8,
-                boxShadow: "0 0 12px rgba(37,99,235,0.5)",
-              }}
-            />
-          </div>
-
-          {/* Steps */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              position: "relative",
-            }}
-          >
-            {/* Step 1 */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 20,
-                flex: 1,
                 position: "relative",
-                opacity: step1Pop.opacity,
-                transform: step1Pop.transform,
+                height: progressRailHeight,
+                background: "rgba(37,99,235,0.12)",
+                borderRadius: progressRailHeight,
+                marginBottom: isPortrait ? 30 : 50,
               }}
             >
               <div
                 style={{
                   position: "absolute",
-                  top: -59,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  background: "#1D4ED8",
-                  boxShadow: "0 0 0 5px rgba(29,78,216,0.2)",
-                  zIndex: 3,
+                  top: 0,
+                  left: 0,
+                  height: "100%",
+                  width: `${progressFillWidth}%`,
+                  background: "linear-gradient(90deg, #1E3A8A, #2563EB, #60A5FA)",
+                  borderRadius: progressRailHeight,
+                  boxShadow: "0 0 12px rgba(37,99,235,0.5)",
                 }}
               />
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 36,
-                  fontWeight: 700,
-                  background: "#1D4ED8",
-                  color: "white",
-                  boxShadow: `0 0 0 ${iconDoneGlow.shadowScale}px rgba(29,78,216,0.15), 0 8px 20px rgba(29,78,216,0.3)`,
-                }}
-              >
-                ✓
-              </div>
-              <div style={{ fontSize: 30, fontWeight: 600, color: "#0F2B6D", textAlign: "center" }}>
-                Embarquement
-              </div>
-              <div style={{ fontSize: 24, color: "#2C3E66", textAlign: "center" }}>
-                Shanghai<br />14 mars
-              </div>
             </div>
 
-            {/* Step 2 */}
+            {/* Steps */}
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 20,
-                flex: 1,
+                flexWrap: isPortrait ? "wrap" : "nowrap",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: isPortrait ? 30 : 0,
                 position: "relative",
-                opacity: step2Pop.opacity,
-                transform: step2Pop.transform,
               }}
             >
+              {/* Step 1 */}
               <div
                 style={{
-                  position: "absolute",
-                  top: -59,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  background: "#1D4ED8",
-                  boxShadow: "0 0 0 5px rgba(29,78,216,0.2)",
-                  zIndex: 3,
-                }}
-              />
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 36,
-                  fontWeight: 700,
-                  background: "#1D4ED8",
-                  color: "white",
-                  boxShadow: `0 0 0 ${iconDoneGlow.shadowScale}px rgba(29,78,216,0.15), 0 8px 20px rgba(29,78,216,0.3)`,
+                  gap: isPortrait ? 12 : 20,
+                  flex: 1,
+                  position: "relative",
+                  opacity: step1Pop.opacity,
+                  transform: step1Pop.transform,
                 }}
               >
-                ✓
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -((dotStepSize / 2) + 50),
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: dotStepSize,
+                    height: dotStepSize,
+                    borderRadius: "50%",
+                    background: "#1D4ED8",
+                    boxShadow: "0 0 0 5px rgba(29,78,216,0.2)",
+                    zIndex: 3,
+                  }}
+                />
+                <div
+                  style={{
+                    width: stepCircleSize,
+                    height: stepCircleSize,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: stepIconFontSize,
+                    fontWeight: 700,
+                    background: "#1D4ED8",
+                    color: "white",
+                    boxShadow: `0 0 0 ${iconDoneGlow.shadowScale}px rgba(29,78,216,0.15), 0 8px 20px rgba(29,78,216,0.3)`,
+                  }}
+                >
+                  ✓
+                </div>
+                <div style={{ fontSize: stepTitleFontSize, fontWeight: 600, color: "#0F2B6D", textAlign: "center" }}>
+                  Embarquement
+                </div>
+                <div style={{ fontSize: stepDateFontSize, color: "#2C3E66", textAlign: "center" }}>
+                  Shanghai<br />14 mars
+                </div>
               </div>
-              <div style={{ fontSize: 30, fontWeight: 600, color: "#0F2B6D", textAlign: "center" }}>
-                Départ navire
-              </div>
-              <div style={{ fontSize: 24, color: "#2C3E66", textAlign: "center" }}>
-                Port Shanghai<br />15 mars
-              </div>
-            </div>
 
-            {/* Step 3 (active) */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 20,
-                flex: 1,
-                position: "relative",
-                opacity: step3Pop.opacity,
-                transform: step3Pop.transform,
-              }}
-            >
+              {/* Step 2 */}
               <div
                 style={{
-                  position: "absolute",
-                  top: -59,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  background: "#2563EB",
-                  boxShadow: "0 0 0 5px rgba(37,99,235,0.2)",
-                  zIndex: 3,
-                }}
-              />
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 36,
-                  fontWeight: 700,
-                  background: "#2563EB",
-                  color: "white",
-                  transform: `scale(${iconActiveGlow.scale})`,
-                  boxShadow: `0 0 0 ${iconActiveGlow.shadowScale}px rgba(37,99,235,0.2), 0 8px 24px rgba(37,99,235,0.35)`,
+                  gap: isPortrait ? 12 : 20,
+                  flex: 1,
+                  position: "relative",
+                  opacity: step2Pop.opacity,
+                  transform: step2Pop.transform,
                 }}
               >
-                ⟳
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -((dotStepSize / 2) + 50),
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: dotStepSize,
+                    height: dotStepSize,
+                    borderRadius: "50%",
+                    background: "#1D4ED8",
+                    boxShadow: "0 0 0 5px rgba(29,78,216,0.2)",
+                    zIndex: 3,
+                  }}
+                />
+                <div
+                  style={{
+                    width: stepCircleSize,
+                    height: stepCircleSize,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: stepIconFontSize,
+                    fontWeight: 700,
+                    background: "#1D4ED8",
+                    color: "white",
+                    boxShadow: `0 0 0 ${iconDoneGlow.shadowScale}px rgba(29,78,216,0.15), 0 8px 20px rgba(29,78,216,0.3)`,
+                  }}
+                >
+                  ✓
+                </div>
+                <div style={{ fontSize: stepTitleFontSize, fontWeight: 600, color: "#0F2B6D", textAlign: "center" }}>
+                  Départ navire
+                </div>
+                <div style={{ fontSize: stepDateFontSize, color: "#2C3E66", textAlign: "center" }}>
+                  Port Shanghai<br />15 mars
+                </div>
               </div>
-              <div style={{ fontSize: 30, fontWeight: 600, color: "#0F2B6D", textAlign: "center" }}>
-                En mer
-              </div>
-              <div style={{ fontSize: 24, color: "#2C3E66", textAlign: "center" }}>
-                Océan Indien<br />28 mars
-              </div>
-              <div
-                style={{
-                  background: "#2563EB",
-                  color: "white",
-                  fontSize: 20,
-                  fontWeight: 700,
-                  letterSpacing: 3,
-                  padding: "6px 20px",
-                  borderRadius: 40,
-                  whiteSpace: "nowrap",
-                  boxShadow: `0 0 0 ${badgePingShadow}px rgba(37,99,235,0.4)`,
-                }}
-              >
-                EN COURS
-              </div>
-            </div>
 
-            {/* Step 4 (warn) */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 20,
-                flex: 1,
-                position: "relative",
-                opacity: step4Pop.opacity,
-                transform: step4Pop.transform,
-              }}
-            >
+              {/* Step 3 (active) */}
               <div
                 style={{
-                  position: "absolute",
-                  top: -59,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  background: "#F59E0B",
-                  boxShadow: "0 0 0 5px rgba(245,158,11,0.2)",
-                  zIndex: 3,
-                }}
-              />
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 36,
-                  fontWeight: 700,
-                  background: "#F59E0B",
-                  color: "white",
-                  transform: `scale(${iconWarnGlow.scale})`,
-                  boxShadow: `0 0 0 ${iconWarnGlow.shadowScale}px rgba(245,158,11,0.2), 0 8px 24px rgba(245,158,11,0.35)`,
+                  gap: isPortrait ? 12 : 20,
+                  flex: 1,
+                  position: "relative",
+                  opacity: step3Pop.opacity,
+                  transform: step3Pop.transform,
                 }}
               >
-                !
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -((dotStepSize / 2) + 50),
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: dotStepSize,
+                    height: dotStepSize,
+                    borderRadius: "50%",
+                    background: "#2563EB",
+                    boxShadow: "0 0 0 5px rgba(37,99,235,0.2)",
+                    zIndex: 3,
+                  }}
+                />
+                <div
+                  style={{
+                    width: stepCircleSize,
+                    height: stepCircleSize,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: stepIconFontSize,
+                    fontWeight: 700,
+                    background: "#2563EB",
+                    color: "white",
+                    transform: `scale(${iconActiveGlow.scale})`,
+                    boxShadow: `0 0 0 ${iconActiveGlow.shadowScale}px rgba(37,99,235,0.2), 0 8px 24px rgba(37,99,235,0.35)`,
+                  }}
+                >
+                  ⟳
+                </div>
+                <div style={{ fontSize: stepTitleFontSize, fontWeight: 600, color: "#0F2B6D", textAlign: "center" }}>
+                  En mer
+                </div>
+                <div style={{ fontSize: stepDateFontSize, color: "#2C3E66", textAlign: "center" }}>
+                  Océan Indien<br />28 mars
+                </div>
+                <div
+                  style={{
+                    background: "#2563EB",
+                    color: "white",
+                    fontSize: badgeStepFontSize,
+                    fontWeight: 700,
+                    letterSpacing: 3,
+                    padding: "4px 16px",
+                    borderRadius: 40,
+                    whiteSpace: "nowrap",
+                    boxShadow: `0 0 0 ${badgePingShadow}px rgba(37,99,235,0.4)`,
+                  }}
+                >
+                  EN COURS
+                </div>
               </div>
-              <div style={{ fontSize: 30, fontWeight: 600, color: "#0F2B6D", textAlign: "center" }}>
-                Dédouanement
-              </div>
-              <div
-                style={{
-                  fontSize: 24,
-                  color: "#B45309",
-                  textAlign: "center",
-                  fontWeight: 500,
-                }}
-              >
-                Dakar<br />Doc manquant
-              </div>
-              <div
-                style={{
-                  background: "#F59E0B",
-                  color: "white",
-                  fontSize: 20,
-                  fontWeight: 700,
-                  letterSpacing: 3,
-                  padding: "6px 20px",
-                  borderRadius: 40,
-                  whiteSpace: "nowrap",
-                  boxShadow: `0 0 0 ${warnBadgePingShadow}px rgba(245,158,11,0.4)`,
-                }}
-              >
-                ALERTE
-              </div>
-            </div>
 
-            {/* Step 5 (pending) */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 20,
-                flex: 1,
-                position: "relative",
-                opacity: step5Pop.opacity,
-                transform: step5Pop.transform,
-              }}
-            >
+              {/* Step 4 (warn) */}
               <div
                 style={{
-                  position: "absolute",
-                  top: -59,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  background: "rgba(37,99,235,0.2)",
-                  zIndex: 3,
-                }}
-              />
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 36,
-                  fontWeight: 700,
-                  background: "rgba(224,237,255,0.9)",
-                  color: "rgba(37,99,235,0.4)",
-                  border: "2px dashed rgba(37,99,235,0.25)",
+                  gap: isPortrait ? 12 : 20,
+                  flex: 1,
+                  position: "relative",
+                  opacity: step4Pop.opacity,
+                  transform: step4Pop.transform,
                 }}
               >
-                ○
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -((dotStepSize / 2) + 50),
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: dotStepSize,
+                    height: dotStepSize,
+                    borderRadius: "50%",
+                    background: "#F59E0B",
+                    boxShadow: "0 0 0 5px rgba(245,158,11,0.2)",
+                    zIndex: 3,
+                  }}
+                />
+                <div
+                  style={{
+                    width: stepCircleSize,
+                    height: stepCircleSize,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: stepIconFontSize,
+                    fontWeight: 700,
+                    background: "#F59E0B",
+                    color: "white",
+                    transform: `scale(${iconWarnGlow.scale})`,
+                    boxShadow: `0 0 0 ${iconWarnGlow.shadowScale}px rgba(245,158,11,0.2), 0 8px 24px rgba(245,158,11,0.35)`,
+                  }}
+                >
+                  !
+                </div>
+                <div style={{ fontSize: stepTitleFontSize, fontWeight: 600, color: "#0F2B6D", textAlign: "center" }}>
+                  Dédouanement
+                </div>
+                <div style={{ fontSize: stepDateFontSize, color: "#B45309", textAlign: "center", fontWeight: 500 }}>
+                  Dakar<br />Doc manquant
+                </div>
+                <div
+                  style={{
+                    background: "#F59E0B",
+                    color: "white",
+                    fontSize: badgeStepFontSize,
+                    fontWeight: 700,
+                    letterSpacing: 3,
+                    padding: "4px 16px",
+                    borderRadius: 40,
+                    whiteSpace: "nowrap",
+                    boxShadow: `0 0 0 ${warnBadgePingShadow}px rgba(245,158,11,0.4)`,
+                  }}
+                >
+                  ALERTE
+                </div>
               </div>
+
+              {/* Step 5 (pending) */}
               <div
                 style={{
-                  fontSize: 30,
-                  fontWeight: 600,
-                  color: "rgba(37,99,235,0.35)",
-                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: isPortrait ? 12 : 20,
+                  flex: 1,
+                  position: "relative",
+                  opacity: step5Pop.opacity,
+                  transform: step5Pop.transform,
                 }}
               >
-                Livraison
-              </div>
-              <div
-                style={{
-                  fontSize: 24,
-                  color: "rgba(44,62,102,0.35)",
-                  textAlign: "center",
-                }}
-              >
-                Client final<br />En attente
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -((dotStepSize / 2) + 50),
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: dotStepSize,
+                    height: dotStepSize,
+                    borderRadius: "50%",
+                    background: "rgba(37,99,235,0.2)",
+                    zIndex: 3,
+                  }}
+                />
+                <div
+                  style={{
+                    width: stepCircleSize,
+                    height: stepCircleSize,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: stepIconFontSize,
+                    fontWeight: 700,
+                    background: "rgba(224,237,255,0.9)",
+                    color: "rgba(37,99,235,0.4)",
+                    border: "2px dashed rgba(37,99,235,0.25)",
+                  }}
+                >
+                  ○
+                </div>
+                <div style={{ fontSize: stepTitleFontSize, fontWeight: 600, color: "rgba(37,99,235,0.35)", textAlign: "center" }}>
+                  Livraison
+                </div>
+                <div style={{ fontSize: stepDateFontSize, color: "rgba(44,62,102,0.35)", textAlign: "center" }}>
+                  Client final<br />En attente
+                </div>
               </div>
             </div>
           </div>

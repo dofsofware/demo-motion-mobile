@@ -22,7 +22,8 @@ const pulseValue = (time: number, duration: number, phase = 0) =>
 
 export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const time = frame / fps;
   const duration = outFrame - inFrame;
 
@@ -34,12 +35,13 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const outZoom = interpolate(
     frame,
     [duration - crossfadeFrames, duration],
-    [1, 1.06],
+    [1, 1.05],
     clamp
   );
 
-  // ---------- Background elements (blue theme) ----------
-  const gridOffset = (time / 18) * 140;
+  // ---------- Background elements responsives ----------
+  const gridSize = isPortrait ? 96 : 140;
+  const gridOffset = (time / 18) * gridSize;
 
   const orb1Progress = pulseValue(time, 22);
   const orb2Progress = pulseValue(time, 26, 3);
@@ -61,47 +63,48 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   );
 
   const sparks = [
-    { top: "20%", left: "15%", size: 10, delay: 0 },
-    { top: "65%", left: "85%", size: 6, delay: 0.7 },
-    { top: "80%", left: "30%", size: 8, delay: 1.2 },
-    { top: "40%", left: "72%", size: 6, delay: 0.3 },
-    { top: "15%", left: "88%", size: 6, delay: 1.8 },
+    { top: "20%", left: "15%", size: isPortrait ? 8 : 10, delay: 0 },
+    { top: "65%", left: "85%", size: isPortrait ? 5 : 6, delay: 0.7 },
+    { top: "80%", left: "30%", size: isPortrait ? 6 : 8, delay: 1.2 },
+    { top: "40%", left: "72%", size: isPortrait ? 5 : 6, delay: 0.3 },
+    { top: "15%", left: "88%", size: isPortrait ? 5 : 6, delay: 1.8 },
   ];
 
   const pulseRingWave = pulseValue(time, 5);
   const pulseRingScale = interpolate(pulseRingWave, [-1, 1], [0.92, 1.12]);
   const pulseRingOpacity = interpolate(pulseRingWave, [-1, 1], [0.5, 0.85]);
 
-  // ---------- Badge ----------
+  // ---------- Badge (slideDownPop adapté) ----------
   const badgeEntrance = interpolate(frame, [0, 0.7 * fps], [0, 1], {
     ...clamp,
     easing: Easing.bezier(0.34, 1.3, 0.55, 1),
   });
   const badgeOpacity = interpolate(badgeEntrance, [0, 0.6, 1], [0, 1, 1], clamp);
-  const badgeTranslateY = interpolate(badgeEntrance, [0, 0.6, 1], [-80, 8, 0], clamp);
+  const badgeTranslateY = interpolate(badgeEntrance, [0, 0.6, 1], [isPortrait ? -40 : -80, 8, 0], clamp);
   const badgeScale = interpolate(badgeEntrance, [0, 0.6, 1], [0.85, 1.02, 1], clamp);
   const badgeBlur = interpolate(badgeEntrance, [0, 0.6, 1], [12, 0, 0], clamp);
 
   const badgePulse = pulseValue(time - 0.7, 2.8);
-  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, 5]);
+  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, isPortrait ? 8 : 5]);
   const badgeBorderOpacity = interpolate(badgePulse, [-1, 1], [0.5, 0.9]);
 
   const dotPulse = pulseValue(time, 1.6);
   const dotScale = interpolate(dotPulse, [-1, 1], [1, 1.2]);
   const dotShadow = interpolate(dotPulse, [-1, 1], [0, 8]);
-  const dotOpacity = interpolate(dotPulse, [-1, 1], [1, 0.9]);
+  const dotOpacityVal = interpolate(dotPulse, [-1, 1], [1, 0.9]);
 
-  // ---------- Card entrance (cardAppear) ----------
+  // ---------- Card entrance (cardAppear) adaptée ----------
   const cardEntrance = (delaySec: number, durationSec: number) => {
     const start = delaySec * fps;
     const end = (delaySec + durationSec) * fps;
-    if (frame < start) return { opacity: 0, translateY: 40, scale: 0.92, blur: 6 };
+    const translateStart = isPortrait ? 30 : 40;
+    if (frame < start) return { opacity: 0, translateY: translateStart, scale: 0.92, blur: 6 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.2, 0.9, 0.4, 1),
     });
     const op = progress;
-    const translateY = interpolate(progress, [0, 1], [40, 0]);
+    const translateY = interpolate(progress, [0, 1], [translateStart, 0]);
     const scale = interpolate(progress, [0, 1], [0.92, 1]);
     const blur = interpolate(progress, [0, 1], [6, 0]);
     return { opacity: op, translateY, scale, blur };
@@ -112,7 +115,6 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const card3Entrance = cardEntrance(2.2, 0.8);
 
   // ---------- Card 1 internal animations ----------
-  // Start at 0.6s, duration 0.6s
   const card1Progress = () => {
     const start = 0.6;
     const duration = 0.6;
@@ -121,16 +123,12 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     return (time - start) / duration;
   };
   const p1 = card1Progress();
-  // Filling bar width from 0 to 100%
   const barWidth = p1 * 100;
-  // Amount from 0 to 1,234,567
   const targetAmount = 1234567;
   const amount = Math.floor(targetAmount * p1);
-  // Icon spin: rotate from 0 to 360 deg
   const iconSpin = p1 * 360;
 
   // ---------- Card 2 internal animations ----------
-  // Start at 1.4s (entrance start), duration 1s
   const card2Progress = () => {
     const start = 1.4;
     const duration = 1;
@@ -148,7 +146,6 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const currentNet = Math.floor(targetNet * p2);
 
   // ---------- Card 3 internal animations ----------
-  // Start at 2.2s, duration 1s
   const card3Progress = () => {
     const start = 2.2;
     const duration = 1;
@@ -158,7 +155,6 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   };
   const p3 = card3Progress();
   const progressWidth = p3 * 100;
-  // Status text based on progress
   let statusText = "En attente";
   let statusColor = "#F59E0B";
   let isPaid = false;
@@ -171,7 +167,6 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   } else if (p3 >= 0.3) {
     statusText = "Virement en cours";
   }
-  // Dot pulse animation for pending state
   const dotPulseOrange = pulseValue(time, 1);
   const dotShadowOrange = interpolate(dotPulseOrange, [-1, 1], [0, 8]);
 
@@ -185,6 +180,30 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     connectorScale = interpolate(progress, [0, 0.5, 1], [0, 1, 1], clamp);
     connectorOpacity = interpolate(progress, [0, 0.5, 1], [0, 0.6, 0], clamp);
   }
+
+  // Layout responsif
+  const contentWidth = width * (isPortrait ? 0.88 : 0.9);
+  const mainGap = isPortrait ? height * 0.05 : 70;
+  const badgeFontSize = isPortrait ? 28 : 38;
+  const badgePadding = isPortrait ? "14px 40px" : "20px 70px";
+  const badgeGap = isPortrait ? 20 : 28;
+  const badgeDotSize = isPortrait ? 16 : 20;
+  const cardsDirection = isPortrait ? "column" : "row";
+  const cardsGap = isPortrait ? 30 : 80;
+  const cardWidth = isPortrait ? "100%" : 580;
+  const cardPadding = isPortrait ? "30px 30px" : "50px 60px";
+  const cardBorderRadius = isPortrait ? 40 : 50;
+  const iconSize = isPortrait ? 70 : 100;
+  const cardTitleFontSize = isPortrait ? 40 : 52;
+  const contentMinHeight = isPortrait ? 140 : 180;
+  const contentGap = isPortrait ? 10 : 15;
+  const contentFontSize = isPortrait ? 22 : 28;
+  const amountFontSize = isPortrait ? 30 : 38;
+  const barHeight = isPortrait ? 3 : 4;
+  const statusDotSize = isPortrait ? 12 : 16;
+  const statusPadding = isPortrait ? "8px 16px" : "12px 24px";
+  const progressBarHeight = isPortrait ? 6 : 10;
+  const pulseRingSize = isPortrait ? 1000 : 1200;
 
   return (
     <div
@@ -205,71 +224,67 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         justifyContent: "center",
       }}
     >
-      {/* Background elements (grid, orbs, lines, sparks, pulse ring) */}
+      {/* Grille dynamique */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundImage:
             "linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px)",
-          backgroundSize: "140px 140px",
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           backgroundPosition: `${gridOffset}px ${gridOffset}px`,
           pointerEvents: "none",
         }}
       />
 
+      {/* Orbes flottants */}
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
+          width: isPortrait ? 480 : 800,
+          height: isPortrait ? 480 : 800,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          top: "10%",
-          left: "-10%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.42,
+          top: isPortrait ? "4%" : "10%",
+          left: isPortrait ? "-12%" : "-10%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.2), rgba(37,99,235,0))",
-          transform: `translate(${orb1Progress * 40}px, ${
-            orb1Progress * 64
-          }px) scale(${1 + orb1Progress * 0.05})`,
+          transform: `translate(${orb1Progress * 40}px, ${orb1Progress * 64}px) scale(${1 + orb1Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 1100,
-          height: 1100,
+          width: isPortrait ? 720 : 1100,
+          height: isPortrait ? 720 : 1100,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          bottom: "-20%",
-          right: "-15%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.36,
+          bottom: isPortrait ? "-10%" : "-20%",
+          right: isPortrait ? "-20%" : "-15%",
           background:
             "radial-gradient(circle, rgba(15,43,109,0.18), rgba(15,43,109,0))",
-          transform: `translate(${orb2Progress * -45}px, ${
-            orb2Progress * -72
-          }px) scale(${1 + orb2Progress * 0.05})`,
+          transform: `translate(${orb2Progress * -45}px, ${orb2Progress * -72}px) scale(${1 + orb2Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 500,
-          height: 500,
+          width: isPortrait ? 360 : 500,
+          height: isPortrait ? 360 : 500,
           borderRadius: "50%",
-          filter: "blur(70px)",
-          opacity: 0.4,
-          top: "50%",
-          left: "70%",
+          filter: `blur(${isPortrait ? 55 : 70}px)`,
+          opacity: 0.38,
+          top: "48%",
+          left: isPortrait ? "58%" : "70%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.25), rgba(37,99,235,0))",
-          transform: `translate(${orb3Progress * 25}px, ${
-            orb3Progress * 40
-          }px) scale(${1 + orb3Progress * 0.05})`,
+          transform: `translate(${orb3Progress * 25}px, ${orb3Progress * 40}px) scale(${1 + orb3Progress * 0.05})`,
         }}
       />
 
+      {/* Lignes flottantes */}
       <div
         style={{
           position: "absolute",
@@ -277,9 +292,9 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "35%",
+          top: isPortrait ? "28%" : "35%",
           left: "-50%",
-          transform: `translateX(${line1Translate}%) rotate(8deg)`,
+          transform: `translateX(${line1Translate}%) rotate(${isPortrait ? 5 : 8}deg)`,
           opacity: line1Opacity,
           zIndex: 1,
         }}
@@ -291,14 +306,15 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "70%",
+          top: isPortrait ? "68%" : "70%",
           left: "-40%",
-          transform: `translateX(${line2Translate}%) rotate(-5deg)`,
+          transform: `translateX(${line2Translate}%) rotate(${isPortrait ? -3 : -5}deg)`,
           opacity: line2Opacity,
           zIndex: 1,
         }}
       />
 
+      {/* Étincelles */}
       {sparks.map((spark, i) => {
         const sparkProgress = loop(time + spark.delay, 3);
         const sparkOpacity = interpolate(
@@ -331,11 +347,12 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         );
       })}
 
+      {/* Anneau pulsant central */}
       <div
         style={{
           position: "absolute",
-          width: 1200,
-          height: 1200,
+          width: pulseRingSize,
+          height: pulseRingSize,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%)",
@@ -347,19 +364,19 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         }}
       />
 
-      {/* Main content */}
+      {/* Contenu principal centré */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 70,
+          gap: mainGap,
           zIndex: 20,
           maxWidth: 3400,
-          width: "90%",
+          width: contentWidth,
           position: "relative",
-          padding: "60px 0",
+          padding: isPortrait ? "30px 0" : "60px 0",
         }}
       >
         {/* Badge */}
@@ -367,12 +384,12 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 28,
+            gap: badgeGap,
             background: "rgba(224,237,255,0.75)",
             backdropFilter: "blur(12px)",
             border: `2px solid rgba(37,99,235,${badgeBorderOpacity})`,
             borderRadius: 120,
-            padding: "20px 70px",
+            padding: badgePadding,
             boxShadow: `0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 0 0 ${badgeRingSize}px rgba(37,99,235,0.2)`,
             opacity: badgeOpacity,
             transform: `translateY(${badgeTranslateY}px) scale(${badgeScale})`,
@@ -381,20 +398,20 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         >
           <div
             style={{
-              width: 20,
-              height: 20,
+              width: badgeDotSize,
+              height: badgeDotSize,
               background: "#2563EB",
               borderRadius: "50%",
-              opacity: dotOpacity,
+              opacity: dotOpacityVal,
               boxShadow: `0 0 12px #2563EB, 0 0 0 ${dotShadow}px rgba(37,99,235,0.4)`,
               transform: `scale(${dotScale})`,
             }}
           />
           <span
             style={{
-              fontSize: 38,
+              fontSize: badgeFontSize,
               fontWeight: 700,
-              letterSpacing: 6,
+              letterSpacing: isPortrait ? 4 : 6,
               textTransform: "uppercase",
               background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
               WebkitBackgroundClip: "text",
@@ -406,19 +423,20 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           </span>
         </div>
 
-        {/* Cards container */}
+        {/* Conteneur des cartes (flex direction responsive) */}
         <div
           style={{
             display: "flex",
-            gap: 80,
+            flexDirection: cardsDirection,
+            gap: cardsGap,
             justifyContent: "center",
-            flexWrap: "wrap",
+            alignItems: "center",
             position: "relative",
             width: "100%",
           }}
         >
-          {/* Connector line */}
-          {connectorScale > 0 && (
+          {/* Ligne de connexion (masquée en portrait car inutile) */}
+          {!isPortrait && connectorScale > 0 && (
             <div
               style={{
                 position: "absolute",
@@ -437,15 +455,15 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             />
           )}
 
-          {/* Card 1 */}
+          {/* Carte 1 */}
           <div
             style={{
               background: "rgba(224,237,255,0.7)",
               backdropFilter: "blur(12px)",
               border: "2px solid rgba(37,99,235,0.3)",
-              borderRadius: 50,
-              padding: "50px 60px",
-              width: 580,
+              borderRadius: cardBorderRadius,
+              padding: cardPadding,
+              width: cardWidth,
               boxShadow: "0 15px 30px -10px rgba(0,0,0,0.1)",
               opacity: card1Entrance.opacity,
               transform: `translateY(${card1Entrance.translateY}px) scale(${card1Entrance.scale})`,
@@ -456,8 +474,8 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           >
             <div
               style={{
-                fontSize: 100,
-                marginBottom: 20,
+                fontSize: iconSize,
+                marginBottom: isPortrait ? 12 : 20,
                 textAlign: "center",
                 transform: `rotate(${iconSpin}deg)`,
                 transition: "transform 0.1s linear",
@@ -467,31 +485,31 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             </div>
             <div
               style={{
-                fontSize: 52,
+                fontSize: cardTitleFontSize,
                 fontWeight: 700,
                 textAlign: "center",
                 background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
-                marginBottom: 20,
+                marginBottom: isPortrait ? 12 : 20,
               }}
             >
               Création rapide
             </div>
             <div
               style={{
-                minHeight: 180,
+                minHeight: contentMinHeight,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 15,
-                fontSize: 28,
+                gap: contentGap,
+                fontSize: contentFontSize,
                 color: "#2C3E66",
               }}
             >
-              <div style={{ display: "flex", gap: 20, fontSize: 28 }}>
+              <div style={{ display: "flex", gap: 20, fontSize: contentFontSize }}>
                 <span>Facture #INV-2847</span>
                 <span style={{ color: "#2563EB" }}>✨</span>
               </div>
@@ -499,20 +517,20 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 style={{
                   background: "rgba(37,99,235,0.1)",
                   borderRadius: 20,
-                  padding: 16,
+                  padding: isPortrait ? 12 : 16,
                   width: "100%",
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 38, fontWeight: 600 }}>
+                <div style={{ fontSize: amountFontSize, fontWeight: 600 }}>
                   {amount.toLocaleString("fr-FR")} FCFA
                 </div>
                 <div
                   style={{
                     width: `${barWidth}%`,
-                    height: 4,
+                    height: barHeight,
                     background: "#2563EB",
-                    borderRadius: 4,
+                    borderRadius: barHeight,
                     marginTop: 12,
                   }}
                 />
@@ -525,15 +543,15 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             </div>
           </div>
 
-          {/* Card 2 */}
+          {/* Carte 2 */}
           <div
             style={{
               background: "rgba(224,237,255,0.7)",
               backdropFilter: "blur(12px)",
               border: "2px solid rgba(37,99,235,0.3)",
-              borderRadius: 50,
-              padding: "50px 60px",
-              width: 580,
+              borderRadius: cardBorderRadius,
+              padding: cardPadding,
+              width: cardWidth,
               boxShadow: "0 15px 30px -10px rgba(0,0,0,0.1)",
               opacity: card2Entrance.opacity,
               transform: `translateY(${card2Entrance.translateY}px) scale(${card2Entrance.scale})`,
@@ -542,45 +560,45 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               zIndex: 2,
             }}
           >
-            <div className="card-icon" style={{ fontSize: 100, marginBottom: 20, textAlign: "center" }}>
+            <div style={{ fontSize: iconSize, marginBottom: isPortrait ? 12 : 20, textAlign: "center" }}>
               🔢
             </div>
             <div
               style={{
-                fontSize: 52,
+                fontSize: cardTitleFontSize,
                 fontWeight: 700,
                 textAlign: "center",
                 background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
-                marginBottom: 20,
+                marginBottom: isPortrait ? 12 : 20,
               }}
             >
               Calcul automatique
             </div>
             <div
               style={{
-                minHeight: 180,
+                minHeight: contentMinHeight,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 15,
-                fontSize: 28,
+                gap: contentGap,
+                fontSize: contentFontSize,
                 color: "#2C3E66",
               }}
             >
-              <div style={{ fontSize: 30, marginBottom: 10 }}>Total HT</div>
-              <div className="count-up" style={{ fontWeight: 700, color: "#2563EB" }}>
+              <div style={{ fontSize: contentFontSize + 2, marginBottom: isPortrait ? 6 : 10 }}>Total HT</div>
+              <div style={{ fontWeight: 700, color: "#2563EB", fontSize: amountFontSize }}>
                 {currentHT.toLocaleString("fr-FR")} FCFA
               </div>
-              <div style={{ fontSize: 30, marginTop: 15 }}>TVA (18%)</div>
-              <div className="count-up" style={{ fontWeight: 700, color: "#2563EB" }}>
+              <div style={{ fontSize: contentFontSize + 2, marginTop: isPortrait ? 10 : 15 }}>TVA (18%)</div>
+              <div style={{ fontWeight: 700, color: "#2563EB", fontSize: amountFontSize }}>
                 {currentTVA.toLocaleString("fr-FR")} FCFA
               </div>
-              <div style={{ fontSize: 30, marginTop: 15, fontWeight: "bold" }}>Net à payer</div>
-              <div className="count-up" style={{ fontWeight: 700, color: "#2563EB" }}>
+              <div style={{ fontSize: contentFontSize + 2, marginTop: isPortrait ? 10 : 15, fontWeight: "bold" }}>Net à payer</div>
+              <div style={{ fontWeight: 700, color: "#2563EB", fontSize: amountFontSize }}>
                 {currentNet.toLocaleString("fr-FR")} FCFA
               </div>
               {p2 >= 1 && (
@@ -589,15 +607,15 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             </div>
           </div>
 
-          {/* Card 3 */}
+          {/* Carte 3 */}
           <div
             style={{
               background: "rgba(224,237,255,0.7)",
               backdropFilter: "blur(12px)",
               border: "2px solid rgba(37,99,235,0.3)",
-              borderRadius: 50,
-              padding: "50px 60px",
-              width: 580,
+              borderRadius: cardBorderRadius,
+              padding: cardPadding,
+              width: cardWidth,
               boxShadow: "0 15px 30px -10px rgba(0,0,0,0.1)",
               opacity: card3Entrance.opacity,
               transform: `translateY(${card3Entrance.translateY}px) scale(${card3Entrance.scale})`,
@@ -606,32 +624,32 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               zIndex: 2,
             }}
           >
-            <div className="card-icon" style={{ fontSize: 100, marginBottom: 20, textAlign: "center" }}>
+            <div style={{ fontSize: iconSize, marginBottom: isPortrait ? 12 : 20, textAlign: "center" }}>
               💰
             </div>
             <div
               style={{
-                fontSize: 52,
+                fontSize: cardTitleFontSize,
                 fontWeight: 700,
                 textAlign: "center",
                 background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
-                marginBottom: 20,
+                marginBottom: isPortrait ? 12 : 20,
               }}
             >
               Suivi paiements
             </div>
             <div
               style={{
-                minHeight: 180,
+                minHeight: contentMinHeight,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 15,
-                fontSize: 28,
+                gap: contentGap,
+                fontSize: contentFontSize,
                 color: "#2C3E66",
               }}
             >
@@ -639,16 +657,16 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 12,
+                  gap: isPortrait ? 8 : 12,
                   background: "rgba(0,0,0,0.05)",
-                  padding: "12px 24px",
+                  padding: statusPadding,
                   borderRadius: 60,
                 }}
               >
                 <div
                   style={{
-                    width: 16,
-                    height: 16,
+                    width: statusDotSize,
+                    height: statusDotSize,
                     borderRadius: "50%",
                     background: isPaid ? "#22C55E" : "#F59E0B",
                     boxShadow: isPaid ? "none" : `0 0 0 ${dotShadowOrange}px rgba(245,158,11,0.5)`,
@@ -656,21 +674,23 @@ export const Scene26 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 />
                 <span>{statusText}</span>
               </div>
-              <div style={{ fontSize: 32, marginTop: 20 }}>Montant : 1 540 000 FCFA</div>
+              <div style={{ fontSize: amountFontSize, marginTop: isPortrait ? 12 : 20 }}>
+                Montant : 1 540 000 FCFA
+              </div>
               <div
                 style={{
                   width: "100%",
                   background: "rgba(0,0,0,0.1)",
                   borderRadius: 20,
-                  marginTop: 20,
+                  marginTop: isPortrait ? 12 : 20,
                 }}
               >
                 <div
                   style={{
                     width: `${progressWidth}%`,
-                    height: 10,
+                    height: progressBarHeight,
                     background: isPaid ? "#22C55E" : "#F59E0B",
-                    borderRadius: 20,
+                    borderRadius: progressBarHeight,
                   }}
                 />
               </div>

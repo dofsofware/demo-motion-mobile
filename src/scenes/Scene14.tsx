@@ -22,7 +22,8 @@ const pulseValue = (time: number, duration: number, phase = 0) =>
 
 export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const time = frame / fps;
   const duration = outFrame - inFrame;
 
@@ -34,12 +35,13 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const outZoom = interpolate(
     frame,
     [duration - crossfadeFrames, duration],
-    [1, 1.06],
+    [1, 1.05],
     clamp
   );
 
-  // ---------- Background elements (same as Scene1) ----------
-  const gridOffset = (time / 18) * 140;
+  // ---------- Background elements responsives ----------
+  const gridSize = isPortrait ? 96 : 140;
+  const gridOffset = (time / 18) * gridSize;
 
   const orb1Progress = pulseValue(time, 22);
   const orb2Progress = pulseValue(time, 26, 3);
@@ -61,113 +63,109 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   );
 
   const sparks = [
-    { top: "20%", left: "15%", size: 10, delay: 0 },
-    { top: "65%", left: "85%", size: 6, delay: 0.7 },
-    { top: "80%", left: "30%", size: 8, delay: 1.2 },
-    { top: "40%", left: "72%", size: 6, delay: 0.3 },
-    { top: "15%", left: "88%", size: 6, delay: 1.8 },
+    { top: "20%", left: "15%", size: isPortrait ? 8 : 10, delay: 0 },
+    { top: "65%", left: "85%", size: isPortrait ? 5 : 6, delay: 0.7 },
+    { top: "80%", left: "30%", size: isPortrait ? 6 : 8, delay: 1.2 },
+    { top: "40%", left: "72%", size: isPortrait ? 5 : 6, delay: 0.3 },
+    { top: "15%", left: "88%", size: isPortrait ? 5 : 6, delay: 1.8 },
   ];
 
   const pulseRingWave = pulseValue(time, 5);
   const pulseRingScale = interpolate(pulseRingWave, [-1, 1], [0.92, 1.12]);
   const pulseRingOpacity = interpolate(pulseRingWave, [-1, 1], [0.5, 0.85]);
 
-  // ---------- Helper for slideDownPop (badge) ----------
+  // ---------- Helper slideDownPop (badge) avec valeurs adaptées ----------
   const slideDownPop = (startDelaySec: number, durationSec: number) => {
     const start = startDelaySec * fps;
     const end = (startDelaySec + durationSec) * fps;
-    if (frame < start) return { opacity: 0, translateY: -80, scale: 0.85, blur: 12 };
+    if (frame < start) return { opacity: 0, translateY: isPortrait ? -40 : -80, scale: 0.85, blur: 12 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.34, 1.3, 0.55, 1),
     });
     const op = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
-    const translateY = interpolate(progress, [0, 0.6, 1], [-80, 8, 0], clamp);
+    const translateY = interpolate(progress, [0, 0.6, 1], [isPortrait ? -40 : -80, 8, 0], clamp);
     const scale = interpolate(progress, [0, 0.6, 1], [0.85, 1.02, 1], clamp);
     const blur = interpolate(progress, [0, 0.6, 1], [12, 0, 0], clamp);
     return { opacity: op, translateY, scale, blur };
   };
   const badgeAnim = slideDownPop(0, 0.7);
 
-  // Badge continuous glow (starts after 0.7s)
   const badgePulse = pulseValue(time - 0.7, 2.8);
-  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, 5]);
+  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, isPortrait ? 8 : 5]);
   const badgeBorderOpacity = interpolate(badgePulse, [-1, 1], [0.5, 0.9]);
 
-  // Dot inside badge (1.6s cycle)
   const dotPulse = pulseValue(time, 1.6);
   const dotScale = interpolate(dotPulse, [-1, 1], [1, 1.2]);
   const dotShadow = interpolate(dotPulse, [-1, 1], [0, 8]);
-  const dotOpacity = interpolate(dotPulse, [-1, 1], [1, 0.9]);
+  const dotOpacityVal = interpolate(dotPulse, [-1, 1], [1, 0.9]);
 
-  // ---------- Title (riseGlow) ----------
+  // ---------- Title (riseGlow) avec valeurs adaptées ----------
   const riseGlow = (startDelaySec: number, durationSec: number) => {
     const start = startDelaySec * fps;
     const end = (startDelaySec + durationSec) * fps;
-    if (frame < start) return { opacity: 0, translateY: 100, scale: 0.92, blur: 8 };
+    if (frame < start) return { opacity: 0, translateY: isPortrait ? 50 : 100, scale: 0.92, blur: 8 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.2, 0.9, 0.3, 1.2),
     });
     const op = interpolate(progress, [0, 0.4, 1], [0, 0.9, 1], clamp);
-    const translateY = interpolate(progress, [0, 0.4, 1], [100, -12, 0], clamp);
+    const translateY = interpolate(progress, [0, 0.4, 1], [isPortrait ? 50 : 100, -12, 0], clamp);
     const scale = interpolate(progress, [0, 0.4, 1], [0.92, 1.01, 1], clamp);
     const blur = interpolate(progress, [0, 0.4, 1], [8, 0, 0], clamp);
     return { opacity: op, translateY, scale, blur };
   };
   const titleAnim = riseGlow(0, 0.9);
-  // Title text shine (4s cycle)
   const titleShine = `${((time % 4) / 4) * 200}% 50%`;
-  // Word "délais" pulse (2.2s cycle)
   const wordPulse = pulseValue(time, 2.2);
   const wordScale = interpolate(wordPulse, [-1, 1], [1, 1.02]);
   const wordGlow = interpolate(wordPulse, [-1, 1], [0, 12]);
 
-  // ---------- Subtitle (slideUpFade) ----------
+  // ---------- Subtitle (slideUpFade) adapté ----------
   const slideUpFade = (startDelaySec: number, durationSec: number) => {
     const start = startDelaySec * fps;
     const end = (startDelaySec + durationSec) * fps;
-    if (frame < start) return { opacity: 0, translateY: 70, scale: 0.95, blur: 6 };
+    if (frame < start) return { opacity: 0, translateY: isPortrait ? 40 : 70, scale: 0.95, blur: 6 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.2, 0.9, 0.4, 1.1),
     });
     const op = progress;
-    const translateY = interpolate(progress, [0, 1], [70, 0]);
+    const translateY = interpolate(progress, [0, 1], [isPortrait ? 40 : 70, 0]);
     const scale = interpolate(progress, [0, 1], [0.95, 1]);
     const blur = interpolate(progress, [0, 1], [6, 0]);
     return { opacity: op, translateY, scale, blur };
   };
   const subtitleAnim = slideUpFade(0, 0.85);
 
-  // ---------- Right panel (slideRightPop) ----------
+  // ---------- Right panel (slideRightPop) adapté ----------
   const slideRightPop = (startDelaySec: number, durationSec: number) => {
     const start = startDelaySec * fps;
     const end = (startDelaySec + durationSec) * fps;
-    if (frame < start) return { opacity: 0, translateX: 80, scale: 0.95, blur: 10 };
+    if (frame < start) return { opacity: 0, translateX: isPortrait ? 40 : 80, scale: 0.95, blur: 10 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.2, 0.9, 0.4, 1.1),
     });
     const op = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
-    const translateX = interpolate(progress, [0, 0.6, 1], [80, -8, 0], clamp);
+    const translateX = interpolate(progress, [0, 0.6, 1], [isPortrait ? 40 : 80, -8, 0], clamp);
     const scale = interpolate(progress, [0, 0.6, 1], [0.95, 1.01, 1], clamp);
     const blur = interpolate(progress, [0, 0.6, 1], [10, 0, 0], clamp);
     return { opacity: op, translateX, scale, blur };
   };
   const panelAnim = slideRightPop(0, 0.9);
 
-  // ---------- Step cards (stepCardEntry with staggered delays) ----------
+  // ---------- Step cards entry (staggered, adapté) ----------
   const stepCardEntry = (delaySec: number, durationSec: number) => {
     const start = delaySec * fps;
     const end = (delaySec + durationSec) * fps;
-    if (frame < start) return { opacity: 0, translateX: 100, scale: 0.88, blur: 12 };
+    if (frame < start) return { opacity: 0, translateX: isPortrait ? 50 : 100, scale: 0.88, blur: 12 };
     const progress = interpolate(frame, [start, end], [0, 1], {
       ...clamp,
       easing: Easing.bezier(0.2, 0.9, 0.4, 1.2),
     });
     const op = interpolate(progress, [0, 0.6, 1], [0, 1, 1], clamp);
-    const translateX = interpolate(progress, [0, 0.6, 1], [100, -8, 0], clamp);
+    const translateX = interpolate(progress, [0, 0.6, 1], [isPortrait ? 50 : 100, -8, 0], clamp);
     const scale = interpolate(progress, [0, 0.6, 1], [0.88, 1.01, 1], clamp);
     const blur = interpolate(progress, [0, 0.6, 1], [12, 0, 0], clamp);
     return { opacity: op, translateX, scale, blur };
@@ -177,17 +175,17 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const step3Anim = stepCardEntry(0.6, 0.6);
 
   // Icon pulse (2.2s cycle)
-  const iconPulse = () => {
+  const iconPulseStyle = () => {
     const wave = pulseValue(time, 2.2);
     const scale = interpolate(wave, [-1, 1], [1, 1.05]);
     const shadowScale = interpolate(wave, [-1, 1], [24, 32]);
     return { scale, shadowScale };
   };
-  const iconPulseStyle = iconPulse();
+  const iconPulseVal = iconPulseStyle();
 
-  // Progress bar widths: target widths (70%, 90%, 50%) and animation over 1s after card appears
+  // Progress bar widths (mêmes délais)
   const progressBarWidth = (delaySec: number, targetWidth: number, durationSec: number = 1) => {
-    const start = (delaySec + 0) * fps; // starts when card entrance starts? Actually card entrance ends at delaySec+0.6, but we want to start after card is visible. We'll start at the same time as card entrance starts (delaySec).
+    const start = delaySec * fps;
     const end = (delaySec + durationSec) * fps;
     if (frame < start) return 0;
     const progress = interpolate(frame, [start, end], [0, 1], {
@@ -200,13 +198,13 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const width2 = progressBarWidth(0.35, 90);
   const width3 = progressBarWidth(0.6, 50);
 
-  // Shimmer effect: infinite loop over 1.5s
+  // Shimmer effect
   const shimmerProgress = loop(time, 1.5);
   const shimmerTranslateX = interpolate(shimmerProgress, [0, 1], [-100, 200]);
 
-  // Counter animations: count from 0 to target over 1s, with a start delay (after card appears)
+  // Counter animations
   const counterValue = (delaySec: number, target: number, durationSec: number = 1) => {
-    const start = (delaySec + 0.2) * fps; // slight delay after card appears, matching JS timeout
+    const start = (delaySec + 0.2) * fps;
     const end = (delaySec + 0.2 + durationSec) * fps;
     if (frame < start) return 0;
     if (frame >= end) return target;
@@ -216,6 +214,38 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const counter1 = counterValue(0.1, 48);
   const counter2 = counterValue(0.35, 24);
   const counter3 = counterValue(0.6, 12);
+
+  // Layout responsif
+  const contentWidth = width * (isPortrait ? 0.88 : 0.92);
+  const mainGap = isPortrait ? height * 0.06 : 180;
+  const leftColumnGap = isPortrait ? height * 0.04 : 60;
+  const columnsDirection = isPortrait ? "column" : "row";
+  const leftColumnTextAlign = isPortrait ? "center" : "left";
+  const leftColumnItemsAlign = isPortrait ? "center" : "flex-start";
+  const badgeWidth = isPortrait ? "auto" : "fit-content";
+  const badgePadding = isPortrait ? "12px 32px" : "18px 56px";
+  const badgeFontSize = isPortrait ? 24 : 34;
+  const badgeGap = isPortrait ? 18 : 28;
+  const badgeDotSize = isPortrait ? 14 : 20;
+  const titleFontSize = isPortrait ? 52 : 100;
+  const titleLineHeight = isPortrait ? 1.2 : 1.1;
+  const subtitleFontSize = isPortrait ? 28 : 48;
+  const panelWidth = isPortrait ? "100%" : "1100px";
+  const panelPadding = isPortrait ? 30 : 60;
+  const panelBorderRadius = isPortrait ? 32 : 48;
+  const stepCardsGap = isPortrait ? 32 : 48;
+  const stepCardPadding = isPortrait ? "24px 28px" : "36px 44px";
+  const stepCardBorderRadius = isPortrait ? 28 : 40;
+  const stepIconSize = isPortrait ? 64 : 88;
+  const stepIconFontSize = isPortrait ? 36 : 48;
+  const stepTitleFontSize = isPortrait ? 36 : 48;
+  const stepDescFontSize = isPortrait ? 20 : 28;
+  const stepDescPaddingLeft = isPortrait ? 80 : 112;
+  const stepInfoPadding = isPortrait ? "20px 24px" : "28px 32px";
+  const stepInfoBorderRadius = isPortrait => isPortrait ? 20 : 28;
+  const labelFontSize = isPortrait ? 20 : 28;
+  const counterFontSize = isPortrait ? 40 : 52;
+  const progressHeight = isPortrait ? 12 : 18;
 
   return (
     <div
@@ -232,71 +262,67 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         fontFamily: "'Sora', system-ui, -apple-system, Segoe UI, Roboto, Arial",
       }}
     >
-      {/* Background elements */}
+      {/* Grille dynamique */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundImage:
             "linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px)",
-          backgroundSize: "140px 140px",
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           backgroundPosition: `${gridOffset}px ${gridOffset}px`,
           pointerEvents: "none",
         }}
       />
 
+      {/* Orbes flottants */}
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
+          width: isPortrait ? 480 : 800,
+          height: isPortrait ? 480 : 800,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          top: "10%",
-          left: "-10%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.42,
+          top: isPortrait ? "4%" : "10%",
+          left: isPortrait ? "-12%" : "-10%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.2), rgba(37,99,235,0))",
-          transform: `translate(${orb1Progress * 40}px, ${
-            orb1Progress * 64
-          }px) scale(${1 + orb1Progress * 0.05})`,
+          transform: `translate(${orb1Progress * 40}px, ${orb1Progress * 64}px) scale(${1 + orb1Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 1100,
-          height: 1100,
+          width: isPortrait ? 720 : 1100,
+          height: isPortrait ? 720 : 1100,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          bottom: "-20%",
-          right: "-15%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.36,
+          bottom: isPortrait ? "-10%" : "-20%",
+          right: isPortrait ? "-20%" : "-15%",
           background:
             "radial-gradient(circle, rgba(15,43,109,0.18), rgba(15,43,109,0))",
-          transform: `translate(${orb2Progress * -45}px, ${
-            orb2Progress * -72
-          }px) scale(${1 + orb2Progress * 0.05})`,
+          transform: `translate(${orb2Progress * -45}px, ${orb2Progress * -72}px) scale(${1 + orb2Progress * 0.05})`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          width: 500,
-          height: 500,
+          width: isPortrait ? 360 : 500,
+          height: isPortrait ? 360 : 500,
           borderRadius: "50%",
-          filter: "blur(70px)",
-          opacity: 0.4,
-          top: "50%",
-          left: "70%",
+          filter: `blur(${isPortrait ? 55 : 70}px)`,
+          opacity: 0.38,
+          top: "48%",
+          left: isPortrait ? "58%" : "70%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.25), rgba(37,99,235,0))",
-          transform: `translate(${orb3Progress * 25}px, ${
-            orb3Progress * 40
-          }px) scale(${1 + orb3Progress * 0.05})`,
+          transform: `translate(${orb3Progress * 25}px, ${orb3Progress * 40}px) scale(${1 + orb3Progress * 0.05})`,
         }}
       />
 
+      {/* Lignes flottantes */}
       <div
         style={{
           position: "absolute",
@@ -304,9 +330,9 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "35%",
+          top: isPortrait ? "28%" : "35%",
           left: "-50%",
-          transform: `translateX(${line1Translate}%) rotate(8deg)`,
+          transform: `translateX(${line1Translate}%) rotate(${isPortrait ? 5 : 8}deg)`,
           opacity: line1Opacity,
           zIndex: 1,
         }}
@@ -318,14 +344,15 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "70%",
+          top: isPortrait ? "68%" : "70%",
           left: "-40%",
-          transform: `translateX(${line2Translate}%) rotate(-5deg)`,
+          transform: `translateX(${line2Translate}%) rotate(${isPortrait ? -3 : -5}deg)`,
           opacity: line2Opacity,
           zIndex: 1,
         }}
       />
 
+      {/* Étincelles */}
       {sparks.map((spark, i) => {
         const sparkProgress = loop(time + spark.delay, 3);
         const sparkOpacity = interpolate(
@@ -358,11 +385,12 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         );
       })}
 
+      {/* Anneau pulsant central */}
       <div
         style={{
           position: "absolute",
-          width: 1200,
-          height: 1200,
+          width: isPortrait ? 760 : 1200,
+          height: isPortrait ? 760 : 1200,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%)",
@@ -374,26 +402,33 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         }}
       />
 
-      {/* Main content: two columns */}
+      {/* Contenu principal centré */}
       <div
         style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
           display: "flex",
+          flexDirection: columnsDirection,
           alignItems: "center",
-          gap: 180,
+          justifyContent: "center",
+          gap: mainGap,
           zIndex: 20,
-          padding: "0 280px",
-          width: "100%",
-          height: "100%",
-          position: "relative",
+          width: contentWidth,
+          maxWidth: 3200,
         }}
       >
-        {/* Left column */}
+        {/* Colonne gauche (texte) */}
         <div
           style={{
-            flex: 1,
+            flex: isPortrait ? "0 0 auto" : 1,
             display: "flex",
             flexDirection: "column",
-            gap: 60,
+            gap: leftColumnGap,
+            width: "100%",
+            textAlign: leftColumnTextAlign,
+            alignItems: leftColumnItemsAlign,
           }}
         >
           {/* Badge */}
@@ -401,13 +436,13 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 28,
+              gap: badgeGap,
               background: "rgba(224,237,255,0.75)",
               backdropFilter: "blur(12px)",
               border: `2px solid rgba(37,99,235,${badgeBorderOpacity})`,
               borderRadius: 120,
-              padding: "18px 56px",
-              width: "fit-content",
+              padding: badgePadding,
+              width: badgeWidth,
               opacity: badgeAnim.opacity,
               transform: `translateY(${badgeAnim.translateY}px) scale(${badgeAnim.scale})`,
               filter: `blur(${badgeAnim.blur}px)`,
@@ -416,20 +451,20 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           >
             <div
               style={{
-                width: 20,
-                height: 20,
+                width: badgeDotSize,
+                height: badgeDotSize,
                 background: "#2563EB",
                 borderRadius: "50%",
-                opacity: dotOpacity,
+                opacity: dotOpacityVal,
                 boxShadow: `0 0 12px #2563EB, 0 0 0 ${dotShadow}px rgba(37,99,235,0.4)`,
                 transform: `scale(${dotScale})`,
               }}
             />
             <span
               style={{
-                fontSize: 34,
+                fontSize: badgeFontSize,
                 fontWeight: 700,
-                letterSpacing: 6,
+                letterSpacing: isPortrait ? 4 : 6,
                 textTransform: "uppercase",
                 background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
                 WebkitBackgroundClip: "text",
@@ -441,12 +476,12 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             </span>
           </div>
 
-          {/* Title */}
+          {/* Titre */}
           <div
             style={{
-              fontSize: 100,
+              fontSize: titleFontSize,
               fontWeight: 800,
-              lineHeight: 1.1,
+              lineHeight: titleLineHeight,
               background:
                 "linear-gradient(130deg, #0F2B6D 0%, #2563EB 45%, #3B82F6 65%, #0F2B6D 100%)",
               backgroundSize: "200% auto",
@@ -478,10 +513,10 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             étape par étape.
           </div>
 
-          {/* Subtitle */}
+          {/* Sous-titre */}
           <div
             style={{
-              fontSize: 48,
+              fontSize: subtitleFontSize,
               fontWeight: 300,
               color: "#2C3E66",
               lineHeight: 1.2,
@@ -494,10 +529,11 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           </div>
         </div>
 
-        {/* Right column: steps container */}
+        {/* Colonne droite : cartes étapes */}
         <div
           style={{
-            flex: "0 0 1100px",
+            flex: isPortrait ? "0 0 auto" : "0 0 auto",
+            width: panelWidth,
             opacity: panelAnim.opacity,
             transform: `translateX(${panelAnim.translateX}px) scale(${panelAnim.scale})`,
             filter: `blur(${panelAnim.blur}px)`,
@@ -508,52 +544,52 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               background: "rgba(224,237,255,0.7)",
               backdropFilter: "blur(12px)",
               border: "2px solid rgba(37,99,235,0.3)",
-              borderRadius: 48,
-              padding: 60,
+              borderRadius: panelBorderRadius,
+              padding: panelPadding,
               boxShadow: "0 25px 45px -12px rgba(0,0,0,0.15)",
               display: "flex",
               flexDirection: "column",
-              gap: 48,
+              gap: stepCardsGap,
             }}
           >
-            {/* Step 1 */}
+            {/* Étape 1 */}
             <div
               style={{
                 background: "rgba(255,255,255,0.85)",
-                borderRadius: 40,
-                padding: "36px 44px",
+                borderRadius: stepCardBorderRadius,
+                padding: stepCardPadding,
                 boxShadow: "0 12px 28px -12px rgba(0,0,0,0.1)",
                 opacity: step1Anim.opacity,
                 transform: `translateX(${step1Anim.translateX}px) scale(${step1Anim.scale})`,
                 filter: `blur(${step1Anim.blur}px)`,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: isPortrait ? 16 : 24, marginBottom: isPortrait ? 16 : 24 }}>
                 <div
                   style={{
-                    width: 88,
-                    height: 88,
+                    width: stepIconSize,
+                    height: stepIconSize,
                     background: "linear-gradient(135deg, #2563EB, #1E3A8A)",
-                    borderRadius: 28,
+                    borderRadius: isPortrait ? 20 : 28,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 48,
-                    boxShadow: `0 ${iconPulseStyle.shadowScale}px 24px rgba(37,99,235,0.3)`,
-                    transform: `scale(${iconPulseStyle.scale})`,
+                    fontSize: stepIconFontSize,
+                    boxShadow: `0 ${iconPulseVal.shadowScale}px 24px rgba(37,99,235,0.3)`,
+                    transform: `scale(${iconPulseVal.scale})`,
                   }}
                 >
                   📋
                 </div>
-                <div style={{ fontSize: 48, fontWeight: 700, color: "#0F2B6D" }}>Dédouanement</div>
+                <div style={{ fontSize: stepTitleFontSize, fontWeight: 700, color: "#0F2B6D" }}>Dédouanement</div>
               </div>
               <div
                 style={{
-                  fontSize: 28,
+                  fontSize: stepDescFontSize,
                   lineHeight: 1.3,
                   color: "#2C3E66",
-                  marginBottom: 32,
-                  paddingLeft: 112,
+                  marginBottom: isPortrait ? 20 : 32,
+                  paddingLeft: stepDescPaddingLeft,
                   borderLeft: "3px solid rgba(37,99,235,0.3)",
                 }}
               >
@@ -562,8 +598,8 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               <div
                 style={{
                   background: "rgba(37,99,235,0.05)",
-                  borderRadius: 28,
-                  padding: "28px 32px",
+                  borderRadius: isPortrait ? 20 : 28,
+                  padding: stepInfoPadding,
                   position: "relative",
                   overflow: "hidden",
                 }}
@@ -576,19 +612,19 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                     width: 8,
                     height: "100%",
                     background: "linear-gradient(180deg, #2563EB, #60A5FA)",
-                    borderRadius: "28px 0 0 28px",
+                    borderRadius: isPortrait ? "20px 0 0 20px" : "28px 0 0 28px",
                   }}
                 />
                 <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
-                  <span style={{ fontSize: 28, fontWeight: 600, color: "#0F2B6D", letterSpacing: 1 }}>📅 Délai objectif</span>
-                  <div style={{ fontSize: 52, fontWeight: 800, color: "#2563EB", lineHeight: 1, display: "inline-flex", alignItems: "baseline", gap: 8 }}>
-                    <span style={{ minWidth: 80, textAlign: "right" }}>{counter1}</span>
-                    <span style={{ fontSize: 28, fontWeight: 500, color: "#2C3E66" }}> heures</span>
+                  <span style={{ fontSize: labelFontSize, fontWeight: 600, color: "#0F2B6D", letterSpacing: 1 }}>📅 Délai objectif</span>
+                  <div style={{ fontSize: counterFontSize, fontWeight: 800, color: "#2563EB", lineHeight: 1, display: "inline-flex", alignItems: "baseline", gap: 8 }}>
+                    <span style={{ minWidth: isPortrait ? 60 : 80, textAlign: "right" }}>{counter1}</span>
+                    <span style={{ fontSize: labelFontSize, fontWeight: 500, color: "#2C3E66" }}> heures</span>
                   </div>
                 </div>
                 <div
                   style={{
-                    height: 18,
+                    height: progressHeight,
                     background: "rgba(30,58,138,0.15)",
                     borderRadius: 20,
                     overflow: "hidden",
@@ -623,44 +659,44 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               </div>
             </div>
 
-            {/* Step 2 */}
+            {/* Étape 2 */}
             <div
               style={{
                 background: "rgba(255,255,255,0.85)",
-                borderRadius: 40,
-                padding: "36px 44px",
+                borderRadius: stepCardBorderRadius,
+                padding: stepCardPadding,
                 boxShadow: "0 12px 28px -12px rgba(0,0,0,0.1)",
                 opacity: step2Anim.opacity,
                 transform: `translateX(${step2Anim.translateX}px) scale(${step2Anim.scale})`,
                 filter: `blur(${step2Anim.blur}px)`,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: isPortrait ? 16 : 24, marginBottom: isPortrait ? 16 : 24 }}>
                 <div
                   style={{
-                    width: 88,
-                    height: 88,
+                    width: stepIconSize,
+                    height: stepIconSize,
                     background: "linear-gradient(135deg, #2563EB, #1E3A8A)",
-                    borderRadius: 28,
+                    borderRadius: isPortrait ? 20 : 28,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 48,
-                    boxShadow: `0 ${iconPulseStyle.shadowScale}px 24px rgba(37,99,235,0.3)`,
-                    transform: `scale(${iconPulseStyle.scale})`,
+                    fontSize: stepIconFontSize,
+                    boxShadow: `0 ${iconPulseVal.shadowScale}px 24px rgba(37,99,235,0.3)`,
+                    transform: `scale(${iconPulseVal.scale})`,
                   }}
                 >
                   🚛
                 </div>
-                <div style={{ fontSize: 48, fontWeight: 700, color: "#0F2B6D" }}>Transport</div>
+                <div style={{ fontSize: stepTitleFontSize, fontWeight: 700, color: "#0F2B6D" }}>Transport</div>
               </div>
               <div
                 style={{
-                  fontSize: 28,
+                  fontSize: stepDescFontSize,
                   lineHeight: 1.3,
                   color: "#2C3E66",
-                  marginBottom: 32,
-                  paddingLeft: 112,
+                  marginBottom: isPortrait ? 20 : 32,
+                  paddingLeft: stepDescPaddingLeft,
                   borderLeft: "3px solid rgba(37,99,235,0.3)",
                 }}
               >
@@ -669,8 +705,8 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               <div
                 style={{
                   background: "rgba(37,99,235,0.05)",
-                  borderRadius: 28,
-                  padding: "28px 32px",
+                  borderRadius: isPortrait ? 20 : 28,
+                  padding: stepInfoPadding,
                   position: "relative",
                   overflow: "hidden",
                 }}
@@ -683,19 +719,19 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                     width: 8,
                     height: "100%",
                     background: "linear-gradient(180deg, #2563EB, #60A5FA)",
-                    borderRadius: "28px 0 0 28px",
+                    borderRadius: isPortrait ? "20px 0 0 20px" : "28px 0 0 28px",
                   }}
                 />
                 <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
-                  <span style={{ fontSize: 28, fontWeight: 600, color: "#0F2B6D", letterSpacing: 1 }}>📅 Délai objectif</span>
-                  <div style={{ fontSize: 52, fontWeight: 800, color: "#2563EB", lineHeight: 1, display: "inline-flex", alignItems: "baseline", gap: 8 }}>
-                    <span style={{ minWidth: 80, textAlign: "right" }}>{counter2}</span>
-                    <span style={{ fontSize: 28, fontWeight: 500, color: "#2C3E66" }}> heures</span>
+                  <span style={{ fontSize: labelFontSize, fontWeight: 600, color: "#0F2B6D", letterSpacing: 1 }}>📅 Délai objectif</span>
+                  <div style={{ fontSize: counterFontSize, fontWeight: 800, color: "#2563EB", lineHeight: 1, display: "inline-flex", alignItems: "baseline", gap: 8 }}>
+                    <span style={{ minWidth: isPortrait ? 60 : 80, textAlign: "right" }}>{counter2}</span>
+                    <span style={{ fontSize: labelFontSize, fontWeight: 500, color: "#2C3E66" }}> heures</span>
                   </div>
                 </div>
                 <div
                   style={{
-                    height: 18,
+                    height: progressHeight,
                     background: "rgba(30,58,138,0.15)",
                     borderRadius: 20,
                     overflow: "hidden",
@@ -730,44 +766,44 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               </div>
             </div>
 
-            {/* Step 3 */}
+            {/* Étape 3 */}
             <div
               style={{
                 background: "rgba(255,255,255,0.85)",
-                borderRadius: 40,
-                padding: "36px 44px",
+                borderRadius: stepCardBorderRadius,
+                padding: stepCardPadding,
                 boxShadow: "0 12px 28px -12px rgba(0,0,0,0.1)",
                 opacity: step3Anim.opacity,
                 transform: `translateX(${step3Anim.translateX}px) scale(${step3Anim.scale})`,
                 filter: `blur(${step3Anim.blur}px)`,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: isPortrait ? 16 : 24, marginBottom: isPortrait ? 16 : 24 }}>
                 <div
                   style={{
-                    width: 88,
-                    height: 88,
+                    width: stepIconSize,
+                    height: stepIconSize,
                     background: "linear-gradient(135deg, #2563EB, #1E3A8A)",
-                    borderRadius: 28,
+                    borderRadius: isPortrait ? 20 : 28,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 48,
-                    boxShadow: `0 ${iconPulseStyle.shadowScale}px 24px rgba(37,99,235,0.3)`,
-                    transform: `scale(${iconPulseStyle.scale})`,
+                    fontSize: stepIconFontSize,
+                    boxShadow: `0 ${iconPulseVal.shadowScale}px 24px rgba(37,99,235,0.3)`,
+                    transform: `scale(${iconPulseVal.scale})`,
                   }}
                 >
                   🏠
                 </div>
-                <div style={{ fontSize: 48, fontWeight: 700, color: "#0F2B6D" }}>Livraison</div>
+                <div style={{ fontSize: stepTitleFontSize, fontWeight: 700, color: "#0F2B6D" }}>Livraison</div>
               </div>
               <div
                 style={{
-                  fontSize: 28,
+                  fontSize: stepDescFontSize,
                   lineHeight: 1.3,
                   color: "#2C3E66",
-                  marginBottom: 32,
-                  paddingLeft: 112,
+                  marginBottom: isPortrait ? 20 : 32,
+                  paddingLeft: stepDescPaddingLeft,
                   borderLeft: "3px solid rgba(37,99,235,0.3)",
                 }}
               >
@@ -776,8 +812,8 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               <div
                 style={{
                   background: "rgba(37,99,235,0.05)",
-                  borderRadius: 28,
-                  padding: "28px 32px",
+                  borderRadius: isPortrait ? 20 : 28,
+                  padding: stepInfoPadding,
                   position: "relative",
                   overflow: "hidden",
                 }}
@@ -790,19 +826,19 @@ export const Scene14 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                     width: 8,
                     height: "100%",
                     background: "linear-gradient(180deg, #2563EB, #60A5FA)",
-                    borderRadius: "28px 0 0 28px",
+                    borderRadius: isPortrait ? "20px 0 0 20px" : "28px 0 0 28px",
                   }}
                 />
                 <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
-                  <span style={{ fontSize: 28, fontWeight: 600, color: "#0F2B6D", letterSpacing: 1 }}>📅 Délai objectif</span>
-                  <div style={{ fontSize: 52, fontWeight: 800, color: "#2563EB", lineHeight: 1, display: "inline-flex", alignItems: "baseline", gap: 8 }}>
-                    <span style={{ minWidth: 80, textAlign: "right" }}>{counter3}</span>
-                    <span style={{ fontSize: 28, fontWeight: 500, color: "#2C3E66" }}> heures</span>
+                  <span style={{ fontSize: labelFontSize, fontWeight: 600, color: "#0F2B6D", letterSpacing: 1 }}>📅 Délai objectif</span>
+                  <div style={{ fontSize: counterFontSize, fontWeight: 800, color: "#2563EB", lineHeight: 1, display: "inline-flex", alignItems: "baseline", gap: 8 }}>
+                    <span style={{ minWidth: isPortrait ? 60 : 80, textAlign: "right" }}>{counter3}</span>
+                    <span style={{ fontSize: labelFontSize, fontWeight: 500, color: "#2C3E66" }}> heures</span>
                   </div>
                 </div>
                 <div
                   style={{
-                    height: 18,
+                    height: progressHeight,
                     background: "rgba(30,58,138,0.15)",
                     borderRadius: 20,
                     overflow: "hidden",
