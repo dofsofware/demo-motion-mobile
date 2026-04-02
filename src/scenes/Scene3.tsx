@@ -1,5 +1,6 @@
 import {
   Easing,
+  Img,
   interpolate,
   staticFile,
   useCurrentFrame,
@@ -23,7 +24,8 @@ const pulseValue = (time: number, duration: number, phase = 0) =>
 
 export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const time = frame / fps;
   const duration = outFrame - inFrame;
 
@@ -32,15 +34,10 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const tOut = Math.max(0, Math.min(1, (duration - frame) / crossfadeFrames));
   const opacity = Math.min(tIn, tOut);
   const push = interpolate(frame, [0, crossfadeFrames], [8, 0], clamp);
-  const outZoom = interpolate(
-    frame,
-    [duration - crossfadeFrames, duration],
-    [1, 1.06],
-    clamp
-  );
+  const outZoom = interpolate(frame, [duration - crossfadeFrames, duration], [1, 1.05], clamp);
 
-  // ---------- Background elements (same as Scene1) ----------
-  const gridOffset = (time / 18) * 140;
+  const gridSize = isPortrait ? 96 : 140;
+  const gridOffset = (time / 18) * gridSize;
 
   const orb1Progress = pulseValue(time, 22);
   const orb2Progress = pulseValue(time, 26, 3);
@@ -70,12 +67,13 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     ...clamp,
     easing: Easing.out(Easing.back(1.3)),
   });
-  const badgeY = interpolate(badgeProgress, [0, 0.6, 1], [-80, 8, 0], clamp);
+  const badgeLift = isPortrait ? 56 : 80;
+  const badgeY = interpolate(badgeProgress, [0, 0.6, 1], [-badgeLift, 8, 0], clamp);
   const badgeScale = interpolate(badgeProgress, [0, 0.6, 1], [0.85, 1.02, 1], clamp);
   const badgeBlur = interpolate(badgeProgress, [0, 1], [12, 0], clamp);
 
   const badgePulse = pulseValue(time, 2.8);
-  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, 5]);
+  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, isPortrait ? 8 : 5]);
   const badgeBorderOpacity = interpolate(badgePulse, [-1, 1], [0.5, 0.9]);
 
   const dotPulse = pulseValue(time, 1.6);
@@ -114,7 +112,6 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     const phase = index === 0 ? 0.75 : index === 1 ? 0.93 : 1.11;
     const glow = pulseValue(time - phase, 3);
     const shadowScale = interpolate(glow, [-1, 1], [0, 0.1]);
-    const extraBlur = interpolate(glow, [-1, 1], [0, 40]);
     return {
       boxShadow: `0 30px 60px -20px rgba(37,99,235,0.12), 0 0 0 ${shadowScale * 40}px rgba(37,99,235,${0.08 + shadowScale * 0.04}), inset 0 1px 0 rgba(255,255,255,0.9)`,
     };
@@ -128,9 +125,7 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     const dropShadow = `0 ${12 + breath * 6}px ${24 + breath * 8}px rgba(37,99,235,${0.18 + breath * 0.1})`;
     return { scale, translateY, dropShadow };
   };
-  const logoStyle = logoBreath();
 
-  // ---------- Connectors ----------
   const connectorStartFrames = [0.28 * fps, 0.46 * fps];
   const connectorProgress = (index: number) => {
     const start = connectorStartFrames[index];
@@ -157,10 +152,31 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     ...clamp,
     easing: Easing.bezier(0.2, 0.9, 0.3, 1.2),
   });
-  const titleY = interpolate(titleProgress, [0, 0.4, 1], [100, -12, 0], clamp);
+  const titleY = interpolate(titleProgress, [0, 0.4, 1], [isPortrait ? 56 : 100, -12, 0], clamp);
   const titleScale = interpolate(titleProgress, [0, 0.4, 1], [0.92, 1.01, 1], clamp);
   const titleBlur = interpolate(titleProgress, [0, 1], [8, 0], clamp);
   const titleShine = `${(time * 50) % 200}% 50%`;
+
+  const contentWidth = width * (isPortrait ? 0.8 : 0.88);
+  const contentHeight = height * (isPortrait ? 0.8 : 0.8);
+  const contentGap = isPortrait ? height * 0.024 : 100;
+  const badgeGap = isPortrait ? 18 : 28;
+  const badgeDotSize = isPortrait ? 16 : 20;
+  const badgeFontSize = isPortrait ? 28 : 38;
+  const badgePadding = isPortrait ? "16px 30px" : "20px 70px";
+  const cardsDirection = isPortrait ? "column" : "row";
+  const cardsGap = isPortrait ? 22 : 80;
+  const cardPadding = isPortrait ? "28px 36px" : "70px 90px";
+  const cardGap = isPortrait ? 18 : 40;
+  const cardRadius = isPortrait ? 28 : 40;
+  const cardIndexFontSize = isPortrait ? 20 : 30;
+  const cardLogoSize = isPortrait ? 92 : 200;
+  const cardLabelFontSize = isPortrait ? 28 : 46;
+  const connectorThickness = isPortrait ? 3 : 3;
+  const connectorLength = isPortrait ? 58 : 80;
+  const connectorDotSize = isPortrait ? 12 : 14;
+  const titleFontSize = isPortrait ? 62 : 110;
+  const titleMaxWidth = isPortrait ? contentWidth * 0.95 : 2800;
 
   return (
     <div
@@ -172,35 +188,32 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         overflow: "hidden",
         opacity,
         transform: `translateY(${push}px) scale(${outZoom})`,
-        background:
-          "radial-gradient(circle at 50% 30%, #F0F5FF 0%, #F5F9FF 100%)",
+        background: "transparent",
         fontFamily: "'Sora', system-ui, -apple-system, Segoe UI, Roboto, Arial",
       }}
     >
-      {/* Grid */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundImage:
             "linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px)",
-          backgroundSize: "140px 140px",
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           backgroundPosition: `${gridOffset}px ${gridOffset}px`,
           pointerEvents: "none",
         }}
       />
 
-      {/* Orbs */}
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
+          width: isPortrait ? 480 : 800,
+          height: isPortrait ? 480 : 800,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          top: "10%",
-          left: "-10%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.42,
+          top: isPortrait ? "5%" : "10%",
+          left: isPortrait ? "-12%" : "-10%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.2), rgba(37,99,235,0))",
           transform: `translate(${orb1Progress * 40}px, ${orb1Progress * 64}px) scale(${1 + orb1Progress * 0.05})`,
@@ -209,13 +222,13 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 1100,
-          height: 1100,
+          width: isPortrait ? 720 : 1100,
+          height: isPortrait ? 720 : 1100,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          bottom: "-20%",
-          right: "-15%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.38,
+          bottom: isPortrait ? "-8%" : "-20%",
+          right: isPortrait ? "-18%" : "-15%",
           background:
             "radial-gradient(circle, rgba(15,43,109,0.18), rgba(15,43,109,0))",
           transform: `translate(${orb2Progress * -45}px, ${orb2Progress * -72}px) scale(${1 + orb2Progress * 0.05})`,
@@ -224,20 +237,19 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 500,
-          height: 500,
+          width: isPortrait ? 360 : 500,
+          height: isPortrait ? 360 : 500,
           borderRadius: "50%",
-          filter: "blur(70px)",
-          opacity: 0.4,
+          filter: `blur(${isPortrait ? 55 : 70}px)`,
+          opacity: 0.36,
           top: "50%",
-          left: "70%",
+          left: isPortrait ? "60%" : "70%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.25), rgba(37,99,235,0))",
           transform: `translate(${orb3Progress * 25}px, ${orb3Progress * 40}px) scale(${1 + orb3Progress * 0.05})`,
         }}
       />
 
-      {/* Floating lines */}
       <div
         style={{
           position: "absolute",
@@ -245,9 +257,9 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "35%",
+          top: isPortrait ? "28%" : "35%",
           left: "-50%",
-          transform: `translateX(${line1Translate}%) rotate(8deg)`,
+          transform: `translateX(${line1Translate}%) rotate(${isPortrait ? 5 : 8}deg)`,
           opacity: line1Opacity,
           zIndex: 1,
         }}
@@ -261,7 +273,7 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
           top: "70%",
           left: "-40%",
-          transform: `translateX(${line2Translate}%) rotate(-5deg)`,
+          transform: `translateX(${line2Translate}%) rotate(${isPortrait ? -3 : -5}deg)`,
           opacity: line2Opacity,
           zIndex: 1,
         }}
@@ -288,8 +300,8 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               position: "absolute",
               top: spark.top,
               left: spark.left,
-              width: spark.size,
-              height: spark.size,
+              width: isPortrait ? Math.max(5, spark.size - 1) : spark.size,
+              height: isPortrait ? Math.max(5, spark.size - 1) : spark.size,
               borderRadius: "50%",
               background: bgColor,
               opacity: sparkOpacity,
@@ -300,12 +312,11 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         );
       })}
 
-      {/* Pulse ring */}
       <div
         style={{
           position: "absolute",
-          width: 1200,
-          height: 1200,
+          width: isPortrait ? 760 : 1200,
+          height: isPortrait ? 760 : 1200,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%)",
@@ -317,35 +328,34 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         }}
       />
 
-      {/* Main content */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 100,
+          gap: contentGap,
           zIndex: 20,
-          maxWidth: 3200,
-          width: "88%",
+          width: contentWidth,
+          maxWidth: titleMaxWidth,
+          maxHeight: contentHeight,
           position: "absolute",
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
-          padding: "60px 0",
+          padding: isPortrait ? "24px 0" : "60px 0",
         }}
       >
-        {/* Badge */}
         <div
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 28,
+            gap: badgeGap,
             background: "rgba(224, 237, 255, 0.75)",
             backdropFilter: "blur(12px)",
             border: `2px solid rgba(37, 99, 235, ${badgeBorderOpacity})`,
             borderRadius: 120,
-            padding: "20px 70px",
+            padding: badgePadding,
             boxShadow: `0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 0 0 ${badgeRingSize}px rgba(37, 99, 235, 0.2)`,
             opacity: badgeProgress,
             transform: `translateY(${badgeY}px) scale(${badgeScale})`,
@@ -354,8 +364,8 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         >
           <div
             style={{
-              width: 20,
-              height: 20,
+              width: badgeDotSize,
+              height: badgeDotSize,
               background: "#2563EB",
               borderRadius: "50%",
               opacity: dotOpacity,
@@ -365,57 +375,61 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           />
           <span
             style={{
-              fontSize: 38,
+              fontSize: badgeFontSize,
               fontWeight: 700,
-              letterSpacing: 6,
+              letterSpacing: isPortrait ? 4 : 6,
               textTransform: "uppercase",
               background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               color: "transparent",
+              whiteSpace: "nowrap",
             }}
           >
             Le quotidien
           </span>
         </div>
 
-        {/* Cards container */}
         <div
           style={{
             display: "flex",
-            gap: 80,
+            flexDirection: cardsDirection,
+            gap: cardsGap,
             alignItems: "stretch",
+            justifyContent: "center",
+            width: "100%",
           }}
         >
-          {/* Card 1 */}
           {(() => {
             const prog = cardEntranceProgress(0);
+            const breath = logoBreath();
             return (
               <div
                 style={{
                   background: "rgba(255,255,255,0.72)",
                   backdropFilter: "blur(16px)",
                   border: "2px solid rgba(37,99,235,0.18)",
-                  borderRadius: 40,
-                  padding: "70px 90px",
+                  borderRadius: cardRadius,
+                  padding: cardPadding,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 40,
+                  gap: cardGap,
                   position: "relative",
                   overflow: "hidden",
                   opacity: prog,
                   transform: `translateY(${cardEntranceY(prog) + cardFloatY(0)}px) scale(${cardEntranceScale(prog)}) rotate(${cardFloatRotate(0)}deg)`,
                   filter: `blur(${cardEntranceBlur(prog)}px)`,
                   ...cardGlow(0),
+                  minWidth: isPortrait ? contentWidth * 0.72 : undefined,
                 }}
               >
                 <div
                   style={{
                     position: "absolute",
-                    top: 22,
-                    right: 30,
-                    fontSize: 30,
+                    top: isPortrait ? 14 : 22,
+                    right: isPortrait ? 18 : 30,
+                    fontSize: cardIndexFontSize,
                     fontWeight: 800,
                     color: "rgba(37,99,235,0.18)",
                     fontFamily: "'Sora', sans-serif",
@@ -424,20 +438,19 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 >
                   01
                 </div>
-                <img
+                <Img
                   src={staticFile("excel.png")}
                   style={{
-                    width: 200,
-                    height: 200,
+                    width: cardLogoSize,
+                    height: cardLogoSize,
                     objectFit: "contain",
-                    filter: `drop-shadow(0 ${12 + logoBreath().translateY / 2}px ${24 + logoBreath().translateY}px rgba(37,99,235,${0.18 + (logoBreath().scale - 1) * 0.5}))`,
-                    transform: `scale(${logoBreath().scale}) translateY(${logoBreath().translateY}px)`,
-                    transition: "transform 0.3s ease",
+                    filter: `drop-shadow(0 ${12 + breath.translateY / 2}px ${24 + breath.translateY}px rgba(37,99,235,${0.18 + (breath.scale - 1) * 0.5}))`,
+                    transform: `scale(${breath.scale}) translateY(${breath.translateY}px)`,
                   }}
                 />
                 <span
                   style={{
-                    fontSize: 46,
+                    fontSize: cardLabelFontSize,
                     fontWeight: 700,
                     background: "linear-gradient(135deg, #0F2B6D, #2563EB)",
                     WebkitBackgroundClip: "text",
@@ -453,7 +466,6 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             );
           })()}
 
-          {/* Connector 1 */}
           {(() => {
             const prog = connectorProgress(0);
             const dot = connectorDotLeft(0);
@@ -461,24 +473,28 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               <div
                 style={{
                   alignSelf: "center",
-                  width: 80,
-                  height: 3,
+                  width: isPortrait ? connectorThickness : connectorLength,
+                  height: isPortrait ? connectorLength : connectorThickness,
                   background:
-                    "linear-gradient(90deg, rgba(37,99,235,0.3), rgba(37,99,235,0.7), rgba(37,99,235,0.3))",
+                    isPortrait
+                      ? "linear-gradient(180deg, rgba(37,99,235,0.3), rgba(37,99,235,0.7), rgba(37,99,235,0.3))"
+                      : "linear-gradient(90deg, rgba(37,99,235,0.3), rgba(37,99,235,0.7), rgba(37,99,235,0.3))",
                   borderRadius: 4,
                   position: "relative",
                   opacity: connectorOpacity(prog),
-                  transform: `scaleX(${connectorScaleX(prog)})`,
+                  transform: isPortrait
+                    ? `scaleY(${connectorScaleX(prog)})`
+                    : `scaleX(${connectorScaleX(prog)})`,
                 }}
               >
                 <div
                   style={{
                     position: "absolute",
-                    top: "50%",
-                    left: dot.left,
+                    top: isPortrait ? dot.left : "50%",
+                    left: isPortrait ? "50%" : dot.left,
                     transform: "translate(-50%, -50%)",
-                    width: 14,
-                    height: 14,
+                    width: connectorDotSize,
+                    height: connectorDotSize,
                     background: "#2563EB",
                     borderRadius: "50%",
                     boxShadow: "0 0 10px #2563EB",
@@ -489,35 +505,36 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             );
           })()}
 
-          {/* Card 2 */}
           {(() => {
             const prog = cardEntranceProgress(1);
+            const breath = logoBreath();
             return (
               <div
                 style={{
                   background: "rgba(255,255,255,0.72)",
                   backdropFilter: "blur(16px)",
                   border: "2px solid rgba(37,99,235,0.18)",
-                  borderRadius: 40,
-                  padding: "70px 90px",
+                  borderRadius: cardRadius,
+                  padding: cardPadding,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 40,
+                  gap: cardGap,
                   position: "relative",
                   overflow: "hidden",
                   opacity: prog,
                   transform: `translateY(${cardEntranceY(prog) + cardFloatY(1)}px) scale(${cardEntranceScale(prog)}) rotate(${cardFloatRotate(1)}deg)`,
                   filter: `blur(${cardEntranceBlur(prog)}px)`,
                   ...cardGlow(1),
+                  minWidth: isPortrait ? contentWidth * 0.72 : undefined,
                 }}
               >
                 <div
                   style={{
                     position: "absolute",
-                    top: 22,
-                    right: 30,
-                    fontSize: 30,
+                    top: isPortrait ? 14 : 22,
+                    right: isPortrait ? 18 : 30,
+                    fontSize: cardIndexFontSize,
                     fontWeight: 800,
                     color: "rgba(37,99,235,0.18)",
                     fontFamily: "'Sora', sans-serif",
@@ -526,19 +543,19 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 >
                   02
                 </div>
-                <img
+                <Img
                   src={staticFile("whatsapp.png")}
                   style={{
-                    width: 200,
-                    height: 200,
+                    width: cardLogoSize,
+                    height: cardLogoSize,
                     objectFit: "contain",
-                    filter: `drop-shadow(0 ${12 + logoBreath().translateY / 2}px ${24 + logoBreath().translateY}px rgba(37,99,235,${0.18 + (logoBreath().scale - 1) * 0.5}))`,
-                    transform: `scale(${logoBreath().scale}) translateY(${logoBreath().translateY}px)`,
+                    filter: `drop-shadow(0 ${12 + breath.translateY / 2}px ${24 + breath.translateY}px rgba(37,99,235,${0.18 + (breath.scale - 1) * 0.5}))`,
+                    transform: `scale(${breath.scale}) translateY(${breath.translateY}px)`,
                   }}
                 />
                 <span
                   style={{
-                    fontSize: 46,
+                    fontSize: cardLabelFontSize,
                     fontWeight: 700,
                     background: "linear-gradient(135deg, #0F2B6D, #2563EB)",
                     WebkitBackgroundClip: "text",
@@ -554,7 +571,6 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             );
           })()}
 
-          {/* Connector 2 */}
           {(() => {
             const prog = connectorProgress(1);
             const dot = connectorDotLeft(1);
@@ -562,24 +578,28 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               <div
                 style={{
                   alignSelf: "center",
-                  width: 80,
-                  height: 3,
+                  width: isPortrait ? connectorThickness : connectorLength,
+                  height: isPortrait ? connectorLength : connectorThickness,
                   background:
-                    "linear-gradient(90deg, rgba(37,99,235,0.3), rgba(37,99,235,0.7), rgba(37,99,235,0.3))",
+                    isPortrait
+                      ? "linear-gradient(180deg, rgba(37,99,235,0.3), rgba(37,99,235,0.7), rgba(37,99,235,0.3))"
+                      : "linear-gradient(90deg, rgba(37,99,235,0.3), rgba(37,99,235,0.7), rgba(37,99,235,0.3))",
                   borderRadius: 4,
                   position: "relative",
                   opacity: connectorOpacity(prog),
-                  transform: `scaleX(${connectorScaleX(prog)})`,
+                  transform: isPortrait
+                    ? `scaleY(${connectorScaleX(prog)})`
+                    : `scaleX(${connectorScaleX(prog)})`,
                 }}
               >
                 <div
                   style={{
                     position: "absolute",
-                    top: "50%",
-                    left: dot.left,
+                    top: isPortrait ? dot.left : "50%",
+                    left: isPortrait ? "50%" : dot.left,
                     transform: "translate(-50%, -50%)",
-                    width: 14,
-                    height: 14,
+                    width: connectorDotSize,
+                    height: connectorDotSize,
                     background: "#2563EB",
                     borderRadius: "50%",
                     boxShadow: "0 0 10px #2563EB",
@@ -590,35 +610,36 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             );
           })()}
 
-          {/* Card 3 */}
           {(() => {
             const prog = cardEntranceProgress(2);
+            const breath = logoBreath();
             return (
               <div
                 style={{
                   background: "rgba(255,255,255,0.72)",
                   backdropFilter: "blur(16px)",
                   border: "2px solid rgba(37,99,235,0.18)",
-                  borderRadius: 40,
-                  padding: "70px 90px",
+                  borderRadius: cardRadius,
+                  padding: cardPadding,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 40,
+                  gap: cardGap,
                   position: "relative",
                   overflow: "hidden",
                   opacity: prog,
                   transform: `translateY(${cardEntranceY(prog) + cardFloatY(2)}px) scale(${cardEntranceScale(prog)}) rotate(${cardFloatRotate(2)}deg)`,
                   filter: `blur(${cardEntranceBlur(prog)}px)`,
                   ...cardGlow(2),
+                  minWidth: isPortrait ? contentWidth * 0.72 : undefined,
                 }}
               >
                 <div
                   style={{
                     position: "absolute",
-                    top: 22,
-                    right: 30,
-                    fontSize: 30,
+                    top: isPortrait ? 14 : 22,
+                    right: isPortrait ? 18 : 30,
+                    fontSize: cardIndexFontSize,
                     fontWeight: 800,
                     color: "rgba(37,99,235,0.18)",
                     fontFamily: "'Sora', sans-serif",
@@ -627,19 +648,19 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
                 >
                   03
                 </div>
-                <img
+                <Img
                   src={staticFile("phone.png")}
                   style={{
-                    width: 200,
-                    height: 200,
+                    width: cardLogoSize,
+                    height: cardLogoSize,
                     objectFit: "contain",
-                    filter: `drop-shadow(0 ${12 + logoBreath().translateY / 2}px ${24 + logoBreath().translateY}px rgba(37,99,235,${0.18 + (logoBreath().scale - 1) * 0.5}))`,
-                    transform: `scale(${logoBreath().scale}) translateY(${logoBreath().translateY}px)`,
+                    filter: `drop-shadow(0 ${12 + breath.translateY / 2}px ${24 + breath.translateY}px rgba(37,99,235,${0.18 + (breath.scale - 1) * 0.5}))`,
+                    transform: `scale(${breath.scale}) translateY(${breath.translateY}px)`,
                   }}
                 />
                 <span
                   style={{
-                    fontSize: 46,
+                    fontSize: cardLabelFontSize,
                     fontWeight: 700,
                     background: "linear-gradient(135deg, #0F2B6D, #2563EB)",
                     WebkitBackgroundClip: "text",
@@ -656,12 +677,11 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           })()}
         </div>
 
-        {/* Title */}
         <div
           style={{
-            fontSize: 110,
+            fontSize: titleFontSize,
             fontWeight: 800,
-            lineHeight: 1.18,
+            lineHeight: isPortrait ? 1.08 : 1.18,
             textAlign: "center",
             letterSpacing: "-0.025em",
             background:
@@ -671,7 +691,7 @@ export const Scene3 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             color: "transparent",
-            maxWidth: 2800,
+            maxWidth: titleMaxWidth,
             opacity: titleProgress,
             transform: `translateY(${titleY}px) scale(${titleScale})`,
             filter: `blur(${titleBlur}px)`,
