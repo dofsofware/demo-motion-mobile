@@ -1,7 +1,7 @@
 import {
   Easing,
+  Img,
   interpolate,
-  spring,
   staticFile,
   useCurrentFrame,
   useVideoConfig,
@@ -27,7 +27,8 @@ const pulseValue = (time: number, duration: number, phase = 0) =>
 
 export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const time = frame / fps;
   const duration = outFrame - inFrame;
 
@@ -39,11 +40,12 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const outZoom = interpolate(
     frame,
     [duration - crossfadeFrames, duration],
-    [1, 1.06],
+    [1, 1.05],
     clamp
   );
 
-  const gridOffset = (time / 18) * 140;
+  const gridSize = isPortrait ? 96 : 140;
+  const gridOffset = (time / 18) * gridSize;
   const line1Progress = loop(time, 12);
   const line2Progress = loop(time, 14);
   const line1Translate = interpolate(line1Progress, [0, 1], [-30, 40]);
@@ -59,10 +61,11 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     ...clamp,
     easing: Easing.out(Easing.cubic),
   });
-  const imageX = interpolate(imageProgress, [0, 0.6, 1], [-280, 20, 0], clamp);
+  const imageTravel = isPortrait ? 120 : 280;
+  const imageX = interpolate(imageProgress, [0, 0.6, 1], [-imageTravel, 20, 0], clamp);
   const imageScale = interpolate(imageProgress, [0, 0.6, 1], [0.92, 1.01, 1], clamp);
   const imageBlur = interpolate(imageProgress, [0, 1], [10, 0], clamp);
-  const imageFloat = Math.sin(((time - 1.2) / 4) * Math.PI * 2) * 9;
+  const imageFloat = Math.sin(((time - 1.2) / 4) * Math.PI * 2) * (isPortrait ? 16 : 9);
 
   const dividerOpacity = interpolate(frame, [1 * fps, 1.6 * fps], [0, 1], clamp);
 
@@ -70,11 +73,12 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     ...clamp,
     easing: Easing.out(Easing.back(1.3)),
   });
-  const badgeX = interpolate(badgeProgress, [0, 0.6, 1], [220, -12, 0], clamp);
+  const badgeOffset = isPortrait ? 80 : 220;
+  const badgeX = interpolate(badgeProgress, [0, 0.6, 1], [badgeOffset, -12, 0], clamp);
   const badgeScale = interpolate(badgeProgress, [0, 0.6, 1], [0.94, 1.01, 1], clamp);
   const badgeBlur = interpolate(badgeProgress, [0, 1], [8, 0], clamp);
   const badgePulse = pulseValue(time, 2.8);
-  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, 5]);
+  const badgeRingSize = interpolate(badgePulse, [-1, 1], [0, isPortrait ? 8 : 5]);
   const badgeBorderOpacity = interpolate(badgePulse, [-1, 1], [0.5, 0.9]);
 
   const dotPulse = pulseValue(time, 1.6);
@@ -86,7 +90,7 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     ...clamp,
     easing: Easing.out(Easing.cubic),
   });
-  const clockX = interpolate(clockProgress, [0, 0.6, 1], [220, -12, 0], clamp);
+  const clockX = interpolate(clockProgress, [0, 0.6, 1], [badgeOffset, -12, 0], clamp);
   const clockScale = interpolate(clockProgress, [0, 0.6, 1], [0.94, 1.01, 1], clamp);
   const clockBlur = interpolate(clockProgress, [0, 1], [8, 0], clamp);
   const clockFloatY = Math.sin(((time - 1.6) / 3) * Math.PI * 2) * 4;
@@ -99,7 +103,7 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     ...clamp,
     easing: Easing.out(Easing.cubic),
   });
-  const titleX = interpolate(titleProgress, [0, 0.6, 1], [220, -12, 0], clamp);
+  const titleX = interpolate(titleProgress, [0, 0.6, 1], [badgeOffset, -12, 0], clamp);
   const titleScale = interpolate(titleProgress, [0, 0.6, 1], [0.94, 1.01, 1], clamp);
   const titleBlur = interpolate(titleProgress, [0, 1], [8, 0], clamp);
   const titleShine = `${(time * 50) % 200}% 50%`;
@@ -110,7 +114,7 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
     ...clamp,
     easing: Easing.out(Easing.cubic),
   });
-  const taglineX = interpolate(taglineProgress, [0, 0.6, 1], [220, -12, 0], clamp);
+  const taglineX = interpolate(taglineProgress, [0, 0.6, 1], [badgeOffset, -12, 0], clamp);
   const taglineScale = interpolate(
     taglineProgress,
     [0, 0.6, 1],
@@ -123,15 +127,40 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
   const pulseRingScale = interpolate(pulseRingWave, [-1, 1], [0.92, 1.12]);
   const pulseRingOpacity = interpolate(pulseRingWave, [-1, 1], [0.5, 0.85]);
 
+  const contentWidth = width * (isPortrait ? 0.8 : 0.92);
+  const contentHeight = height * (isPortrait ? 0.8 : 0.8);
+  const contentDirection = isPortrait ? "column" : "row";
+  const contentGap = isPortrait ? height * 0.02 : 0;
+  const imageSectionWidth = isPortrait ? contentWidth : contentWidth * 0.46;
+  const imageSectionHeight = isPortrait ? contentHeight * 0.42 : contentHeight;
+  const imageMaxWidth = isPortrait ? contentWidth * 0.88 : 1500;
+  const dividerWidth = isPortrait ? contentWidth * 0.55 : 3;
+  const dividerHeight = isPortrait ? 3 : contentHeight * 0.6;
+  const textSectionWidth = isPortrait ? contentWidth : contentWidth * 0.54;
+  const textAlign = isPortrait ? "center" : "left";
+  const textItemsAlignment = isPortrait ? "center" : "flex-start";
+  const textPaddingLeft = isPortrait ? 0 : 120;
+  const textGap = isPortrait ? height * 0.018 : 70;
+  const badgeFontSize = isPortrait ? 30 : 38;
+  const badgeDotSize = isPortrait ? 16 : 20;
+  const badgeGap = isPortrait ? 20 : 28;
+  const badgePadding = isPortrait ? "16px 34px" : "20px 70px";
+  const clockSize = isPortrait ? 148 : 220;
+  const titleFontSize = isPortrait ? 72 : 120;
+  const titleLineHeight = isPortrait ? 1.07 : 1.18;
+  const taglineFontSize = isPortrait ? 26 : 52;
+  const taglinePadding = isPortrait ? "14px 28px" : "14px 50px";
+  const heroDropShadow = isPortrait
+    ? "drop-shadow(0 30px 60px rgba(37,99,235,0.2))"
+    : "drop-shadow(0 40px 80px rgba(37,99,235,0.18))";
+
   const sparks = [
-    { top: "20%", left: "15%", size: 10, delay: 0 },
+    { top: "20%", left: "15%", size: isPortrait ? 8 : 10, delay: 0 },
     { top: "65%", left: "85%", size: 6, delay: 0.7 },
-    { top: "80%", left: "30%", size: 8, delay: 1.2 },
+    { top: "80%", left: "30%", size: isPortrait ? 7 : 8, delay: 1.2 },
     { top: "40%", left: "72%", size: 6, delay: 0.3 },
     { top: "15%", left: "88%", size: 6, delay: 1.8 },
   ];
-
-  const heroDropShadow = "drop-shadow(0 40px 80px rgba(37,99,235,0.18))";
 
   return (
     <div
@@ -143,7 +172,7 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         overflow: "hidden",
         opacity,
         transform: `translateY(${push}px) scale(${outZoom})`,
-        background: "radial-gradient(circle at 50% 30%, #F0F5FF 0%, #F5F9FF 100%)",
+        background: "transparent",
         fontFamily: "'Sora', system-ui, -apple-system, Segoe UI, Roboto, Arial",
       }}
     >
@@ -153,7 +182,7 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           inset: 0,
           backgroundImage:
             "linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px)",
-          backgroundSize: "140px 140px",
+          backgroundSize: `${gridSize}px ${gridSize}px`,
           backgroundPosition: `${gridOffset}px ${gridOffset}px`,
           pointerEvents: "none",
         }}
@@ -161,13 +190,13 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 800,
+          width: isPortrait ? 480 : 800,
+          height: isPortrait ? 480 : 800,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          top: "10%",
-          left: "-10%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.42,
+          top: isPortrait ? "4%" : "10%",
+          left: isPortrait ? "-12%" : "-10%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.2), rgba(37,99,235,0))",
           transform: `translate(${orb1Progress * 40}px, ${orb1Progress * 64}px) scale(${1 + orb1Progress * 0.05})`,
@@ -176,13 +205,13 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 1100,
-          height: 1100,
+          width: isPortrait ? 720 : 1100,
+          height: isPortrait ? 720 : 1100,
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.4,
-          bottom: "-20%",
-          right: "-15%",
+          filter: `blur(${isPortrait ? 70 : 90}px)`,
+          opacity: 0.36,
+          bottom: isPortrait ? "-10%" : "-20%",
+          right: isPortrait ? "-20%" : "-15%",
           background:
             "radial-gradient(circle, rgba(15,43,109,0.18), rgba(15,43,109,0))",
           transform: `translate(${orb2Progress * -45}px, ${orb2Progress * -72}px) scale(${1 + orb2Progress * 0.05})`,
@@ -191,13 +220,13 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 500,
-          height: 500,
+          width: isPortrait ? 360 : 500,
+          height: isPortrait ? 360 : 500,
           borderRadius: "50%",
-          filter: "blur(70px)",
-          opacity: 0.4,
-          top: "50%",
-          left: "70%",
+          filter: `blur(${isPortrait ? 55 : 70}px)`,
+          opacity: 0.38,
+          top: "48%",
+          left: isPortrait ? "58%" : "70%",
           background:
             "radial-gradient(circle, rgba(37,99,235,0.25), rgba(37,99,235,0))",
           transform: `translate(${orb3Progress * 25}px, ${orb3Progress * 40}px) scale(${1 + orb3Progress * 0.05})`,
@@ -210,9 +239,9 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "35%",
+          top: isPortrait ? "28%" : "35%",
           left: "-50%",
-          transform: `translateX(${line1Translate}%) rotate(8deg)`,
+          transform: `translateX(${line1Translate}%) rotate(${isPortrait ? 5 : 8}deg)`,
           opacity: line1Opacity,
           zIndex: 1,
         }}
@@ -224,9 +253,9 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           height: 2,
           background:
             "linear-gradient(90deg, transparent, rgba(37,99,235,0.3), transparent)",
-          top: "70%",
+          top: isPortrait ? "68%" : "70%",
           left: "-40%",
-          transform: `translateX(${line2Translate}%) rotate(-5deg)`,
+          transform: `translateX(${line2Translate}%) rotate(${isPortrait ? -3 : -5}deg)`,
           opacity: line2Opacity,
           zIndex: 1,
         }}
@@ -262,8 +291,8 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           position: "absolute",
-          width: 1200,
-          height: 1200,
+          width: isPortrait ? 760 : 1200,
+          height: isPortrait ? 760 : 1200,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%)",
@@ -277,14 +306,13 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       <div
         style={{
           display: "flex",
-          flexDirection: "row",
+          flexDirection: contentDirection,
           alignItems: "center",
           justifyContent: "center",
-          gap: 0,
+          gap: contentGap,
           zIndex: 20,
-          width: "92%",
-          maxWidth: 3600,
-          height: "80%",
+          width: contentWidth,
+          height: contentHeight,
           position: "absolute",
           left: "50%",
           top: "50%",
@@ -293,21 +321,25 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
       >
         <div
           style={{
-            flex: "0 0 46%",
+            width: imageSectionWidth,
+            height: imageSectionHeight,
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-end",
-            paddingRight: 80,
+            justifyContent: "center",
+            paddingRight: isPortrait ? 0 : 80,
             opacity: imageProgress,
-            transform: `translateX(${imageX}px)`,
+            transform: isPortrait
+              ? `translateY(${imageX * 0.35}px)`
+              : `translateX(${imageX}px)`,
+            flexShrink: 0,
           }}
         >
-          <img
+          <Img
             src={staticFile("scenes/1.png")}
             style={{
               width: "100%",
-              maxWidth: 1500,
-              height: "auto",
+              maxWidth: imageMaxWidth,
+              maxHeight: imageSectionHeight,
               objectFit: "contain",
               opacity: imageProgress,
               transform: `translateY(${imageFloat}px) scale(${imageScale})`,
@@ -317,36 +349,38 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
         </div>
         <div
           style={{
-            flex: "0 0 3px",
-            height: "60%",
-            background:
-              "linear-gradient(180deg, transparent, rgba(37,99,235,0.25) 30%, rgba(37,99,235,0.4) 50%, rgba(37,99,235,0.25) 70%, transparent)",
+            width: dividerWidth,
+            height: dividerHeight,
+            background: isPortrait
+              ? "linear-gradient(90deg, transparent, rgba(37,99,235,0.25) 30%, rgba(37,99,235,0.4) 50%, rgba(37,99,235,0.25) 70%, transparent)"
+              : "linear-gradient(180deg, transparent, rgba(37,99,235,0.25) 30%, rgba(37,99,235,0.4) 50%, rgba(37,99,235,0.25) 70%, transparent)",
             borderRadius: 4,
             alignSelf: "center",
             opacity: dividerOpacity,
+            flexShrink: 0,
           }}
         />
         <div
           style={{
-            flex: "0 0 54%",
+            width: textSectionWidth,
             display: "flex",
             flexDirection: "column",
-            alignItems: "flex-start",
+            alignItems: textItemsAlignment,
             justifyContent: "center",
-            paddingLeft: 120,
-            gap: 70,
+            paddingLeft: textPaddingLeft,
+            gap: textGap,
           }}
         >
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 28,
+              gap: badgeGap,
               background: "rgba(224, 237, 255, 0.75)",
               backdropFilter: "blur(12px)",
               border: `2px solid rgba(37, 99, 235, ${badgeBorderOpacity})`,
               borderRadius: 120,
-              padding: "20px 70px",
+              padding: badgePadding,
               boxShadow: `0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 0 0 ${badgeRingSize}px rgba(37, 99, 235, 0.2)`,
               opacity: badgeProgress,
               transform: `translateX(${badgeX}px) scale(${badgeScale})`,
@@ -355,33 +389,35 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           >
             <div
               style={{
-                width: 20,
-                height: 20,
+                width: badgeDotSize,
+                height: badgeDotSize,
                 background: "#2563EB",
                 borderRadius: "50%",
                 opacity: dotOpacity,
                 boxShadow: `0 0 12px #2563EB, 0 0 0 ${dotShadow}px rgba(37,99,235,0.4)`,
                 transform: `scale(${dotScale})`,
+                flexShrink: 0,
               }}
             />
             <span
               style={{
-                fontSize: 38,
+                fontSize: badgeFontSize,
                 fontWeight: 700,
-                letterSpacing: 6,
+                letterSpacing: isPortrait ? 4 : 6,
                 textTransform: "uppercase",
                 background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
+                whiteSpace: "nowrap",
               }}
             >
               LE PROBLÈME
             </span>
           </div>
           <svg
-            width="220"
-            height="220"
+            width={clockSize}
+            height={clockSize}
             viewBox="0 0 100 100"
             style={{
               overflow: "visible",
@@ -437,10 +473,10 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
           </svg>
           <div
             style={{
-              fontSize: 120,
+              fontSize: titleFontSize,
               fontWeight: 800,
-              lineHeight: 1.18,
-              textAlign: "left",
+              lineHeight: titleLineHeight,
+              textAlign,
               letterSpacing: "-0.02em",
               background:
                 "linear-gradient(130deg, #0F2B6D 0%, #2563EB 45%, #3B82F6 65%, #0F2B6D 100%)",
@@ -452,37 +488,45 @@ export const Scene1 = ({ inFrame, outFrame, crossfadeFrames }: P) => {
               opacity: titleProgress,
               transform: `translateX(${titleX}px) scale(${titleScale})`,
               filter: `blur(${titleBlur}px)`,
+              width: "100%",
             }}
           >
-            <div>Vous perdez du <span
-              style={{
-                display: "inline-block",
-                background: "linear-gradient(135deg, #3B82F6, #1E40AF)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-                fontWeight: 900,
-                transform: `scale(${wordPulseScale})`,
-                textShadow: `0 0 ${wordGlow}px rgba(59,130,246,0.6)`,
-              }}
-            >temps</span></div>
+            <div>
+              Vous perdez du{" "}
+              <span
+                style={{
+                  display: "inline-block",
+                  background: "linear-gradient(135deg, #3B82F6, #1E40AF)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  fontWeight: 900,
+                  transform: `scale(${wordPulseScale})`,
+                  textShadow: `0 0 ${wordGlow}px rgba(59,130,246,0.6)`,
+                }}
+              >
+                temps
+              </span>
+            </div>
             <div>à suivre vos dossiers</div>
-            <div>de transit ?</div>
+            <div>de transit&nbsp;?</div>
           </div>
           <div
             style={{
-              fontSize: 52,
+              fontSize: taglineFontSize,
               fontWeight: 500,
               color: "#2C3E66",
               background: "rgba(255, 255, 255, 0.55)",
               backdropFilter: "blur(4px)",
-              padding: "14px 50px",
+              padding: taglinePadding,
               borderRadius: 80,
               display: "inline-block",
               opacity: taglineProgress,
               transform: `translateX(${taglineX}px) scale(${taglineScale})`,
               filter: `blur(${taglineBlur}px)`,
               boxShadow: "0 8px 20px rgba(0,0,0,0.03)",
+              textAlign,
+              maxWidth: isPortrait ? contentWidth * 0.96 : undefined,
             }}
           >
             Suivi de dossiers · Gestion de transit · Visibilité opérationnelle
