@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>ShipTrack – Motion Graphic Scene 06 | Marges</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+
+:root {
+  --p:#0F2B6D; --s:#2563EB; --bg:#F5F9FF; --acc:#E0EDFF; --td:#0A1A3A; --tm:#2C3E66; --glow:rgba(37,99,235,0.3);
+}
+
+body {
+  width:3840px; height:2160px;
+  background:radial-gradient(circle at 50% 30%, #F0F5FF 0%, var(--bg) 100%);
+  font-family:'Sora',sans-serif; overflow:hidden; position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* ========== DÉCOR DYNAMIQUE (inchangé) ========== */
+.grid { position:absolute; inset:0; background-image:linear-gradient(rgba(30,58,138,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(30,58,138,.045) 1px,transparent 1px); background-size:140px 140px; animation:gridShift 18s linear infinite; pointer-events:none; }
+@keyframes gridShift { 0% { background-position:0 0; } 100% { background-position:140px 140px; } }
+
+.orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.4; pointer-events:none; animation:orbFloat 14s ease-in-out infinite alternate; }
+.orb-1 { width:800px; height:800px; background:radial-gradient(circle,rgba(37,99,235,0.2),transparent); top:10%; left:-10%; animation-duration:22s; }
+.orb-2 { width:1100px; height:1100px; background:radial-gradient(circle,rgba(15,43,109,0.18),transparent); bottom:-20%; right:-15%; animation-duration:26s; animation-direction:alternate-reverse; }
+.orb-3 { width:500px; height:500px; background:radial-gradient(circle,rgba(37,99,235,0.25),transparent); top:50%; left:70%; animation-duration:18s; filter:blur(70px); }
+@keyframes orbFloat { 0% { transform:translate(0,0) scale(1); } 100% { transform:translate(5%,8%) scale(1.1); } }
+
+.floating-line { position:absolute; width:200%; height:2px; background:linear-gradient(90deg,transparent,rgba(37,99,235,0.3),transparent); top:35%; left:-50%; transform:rotate(8deg); animation:driftLine 12s linear infinite; pointer-events:none; z-index:1; }
+.floating-line2 { top:70%; transform:rotate(-5deg); animation:driftLineReverse 14s linear infinite; width:180%; }
+@keyframes driftLine { 0% { transform:translateX(-30%) rotate(8deg); opacity:0; } 20% { opacity:0.5; } 80% { opacity:0.5; } 100% { transform:translateX(40%) rotate(8deg); opacity:0; } }
+@keyframes driftLineReverse { 0% { transform:translateX(40%) rotate(-5deg); opacity:0; } 20% { opacity:0.4; } 80% { opacity:0.4; } 100% { transform:translateX(-50%) rotate(-5deg); opacity:0; } }
+
+.spark { position:absolute; width:6px; height:6px; background:var(--s); border-radius:50%; opacity:0; animation:sparkle 3s ease-in-out infinite; pointer-events:none; filter:blur(1px); }
+.spark-1 { top:20%; left:15%; animation-delay:0s; width:10px; height:10px; }
+.spark-2 { top:65%; left:85%; animation-delay:0.7s; }
+.spark-3 { top:80%; left:30%; animation-delay:1.2s; width:8px; height:8px; }
+.spark-4 { top:40%; left:72%; animation-delay:0.3s; }
+.spark-5 { top:15%; left:88%; animation-delay:1.8s; }
+@keyframes sparkle { 0% { opacity:0; transform:scale(0); background:#60A5FA; } 30% { opacity:0.7; transform:scale(1.2); background:#3B82F6; } 70% { opacity:0.4; transform:scale(0.8); } 100% { opacity:0; transform:scale(0); } }
+
+.pulse-ring { position:absolute; width:1200px; height:1200px; border-radius:50%; background:radial-gradient(circle,rgba(37,99,235,0.08) 0%,rgba(37,99,235,0.02) 60%,transparent 85%); top:50%; left:50%; transform:translate(-50%,-50%); animation:largePulse 5s ease-in-out infinite; pointer-events:none; z-index:0; }
+@keyframes largePulse { 0% { transform:translate(-50%,-50%) scale(0.92); opacity:0.5; } 50% { transform:translate(-50%,-50%) scale(1.12); opacity:0.85; } 100% { transform:translate(-50%,-50%) scale(0.92); opacity:0.5; } }
+
+/* ========== NOUVEAU LAYOUT : IMAGE À GAUCHE (PLEINE HAUTEUR) / TEXTE À DROITE ========== */
+.main-content {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;          /* les colonnes prennent la même hauteur */
+  gap: 80px;
+  z-index: 20;
+  width: 90%;
+  max-width: 3400px;
+  height: 90%;                  /* utilise l'espace disponible */
+  margin: 0 auto;
+  position: relative;
+}
+
+/* COLONNE GAUCHE : IMAGE PLEINE HAUTEUR, SANS CADRE */
+.image-col {
+  flex: 1.1;                    /* proportion pour que l'image soit bien visible */
+  display: flex;
+  align-items: stretch;
+  opacity: 0;
+  transform: translateX(-350px);
+  filter: blur(12px);
+  animation: slideInLeftPro 0.95s cubic-bezier(0.2, 1.1, 0.35, 1) forwards;
+}
+
+.visibility-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;            /* remplit toute la hauteur, sans déformation */
+  display: block;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+}
+
+/* COLONNE DROITE : CONTENU TEXTE (badge, SVG, titre) */
+.text-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  opacity: 0;
+  transform: translateX(350px);
+  filter: blur(12px);
+  animation: slideInRightPro 0.95s cubic-bezier(0.2, 1.1, 0.35, 1) forwards;
+}
+
+/* BADGE : suppression de l'animation d'entrée, conservation des effets continus */
+.badge-problem {
+  display: inline-flex;
+  align-items: center;
+  gap: 28px;
+  background: rgba(224,237,255,0.75);
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(37,99,235,0.5);
+  border-radius: 120px;
+  padding: 20px 70px;
+  animation: badgeGlowPulse 2.8s infinite;
+}
+.pulse-dot {
+  width: 20px;
+  height: 20px;
+  background: var(--s);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--s);
+  animation: pulseDot 1.6s ease-in-out infinite;
+}
+.badge-text {
+  font-family:'Sora',sans-serif;
+  font-size:38px;
+  font-weight:700;
+  letter-spacing:6px;
+  text-transform:uppercase;
+  background:linear-gradient(135deg,#1E3A8A,#2563EB);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+/* SVG : garde ses animations continues (float, etc) mais plus de slide */
+.motion-svg {
+  filter:drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+  animation: floatSoft 3s ease-in-out infinite alternate;
+  width: 260px;
+  height: 260px;
+}
+
+/* TITRE : garde ses effets de brillance et pulsation */
+.glitch-title {
+  font-family:'Sora',sans-serif;
+  font-size:130px;
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:-0.02em;
+  background:linear-gradient(130deg,var(--p) 0%,var(--s) 45%,#3B82F6 65%,var(--p) 100%);
+  background-size:200% auto;
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+  animation: textShine 4s linear infinite;
+  margin:0;
+}
+.glitch-title span {
+  display:inline-block;
+  position:relative;
+  background:linear-gradient(135deg,#2563EB,#1E3A8A);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+  animation:pulseGlowWord 2.2s ease-in-out infinite;
+  font-weight:900;
+  letter-spacing:-0.01em;
+}
+
+/* ========== ANIMATIONS D'ENTRÉE MOTION DESIGN PRO ========== */
+@keyframes slideInLeftPro {
+  0% {
+    opacity: 0;
+    transform: translateX(-380px);
+    filter: blur(18px);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateX(12px);
+    filter: blur(2px);
+  }
+  70% {
+    transform: translateX(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes slideInRightPro {
+  0% {
+    opacity: 0;
+    transform: translateX(380px);
+    filter: blur(18px);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateX(-12px);
+    filter: blur(2px);
+  }
+  70% {
+    transform: translateX(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+/* animations continues existantes */
+@keyframes badgeGlowPulse {
+  0%   { box-shadow:0 15px 30px -10px rgba(0,0,0,0.1),0 0 0 0 rgba(37,99,235,0.3); border-color:rgba(37,99,235,0.5); }
+  50%  { box-shadow:0 20px 35px -8px rgba(0,0,0,0.15),0 0 0 5px rgba(37,99,235,0.2); border-color:rgba(37,99,235,0.9); }
+  100% { box-shadow:0 15px 30px -10px rgba(0,0,0,0.1),0 0 0 0 rgba(37,99,235,0); border-color:rgba(37,99,235,0.5); }
+}
+@keyframes pulseDot {
+  0%,100% { transform:scale(1); opacity:1; box-shadow:0 0 0 0 var(--s); }
+  50%      { transform:scale(1.2); opacity:0.9; box-shadow:0 0 0 8px rgba(37,99,235,0.4); }
+}
+@keyframes textShine {
+  0%   { background-position:0% 50%; }
+  100% { background-position:200% 50%; }
+}
+@keyframes pulseGlowWord {
+  0%,100% { text-shadow:0 0 0px rgba(37,99,235,0); transform:scale(1); }
+  50%      { text-shadow:0 0 12px rgba(37,99,235,0.6); transform:scale(1.02); }
+}
+@keyframes floatSoft {
+  0%   { transform:translateY(0px) rotate(0deg); }
+  100% { transform:translateY(-8px) rotate(1deg); }
+}
+
+/* ajustements 4K */
+@media (max-width:3840px) {
+  .glitch-title { font-size:110px; }
+  .badge-text { font-size:34px; }
+  .badge-problem { padding:16px 60px; gap:22px; }
+  .main-content { gap:70px; }
+  .motion-svg { width: 240px; height: 240px; }
+}
+
+.prog, .prog-f { display:none !important; }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+<div class="floating-line"></div><div class="floating-line floating-line2"></div>
+<div class="spark spark-1"></div><div class="spark spark-2"></div><div class="spark spark-3"></div><div class="spark spark-4"></div><div class="spark spark-5"></div>
+<div class="pulse-ring"></div>
+
+<div class="main-content">
+  <!-- COLONNE GAUCHE : IMAGE (pleine hauteur, sans cadre) -->
+  <div class="image-col">
+    <img class="visibility-img" src="marge.png" alt="Maîtrise des marges ShipTrack" onerror="this.onerror=null;this.src='https://placehold.co/1200x1600/0F2B6D/FFFFFF?text=marge.png';">
+  </div>
+
+  <!-- COLONNE DROITE : BADGE + SVG + TITRE -->
+  <div class="text-col">
+    <div class="badge-problem">
+      <div class="pulse-dot"></div>
+      <span class="badge-text">PROBLÈME 3/3</span>
+    </div>
+
+    <!-- SVG icon : marges et indicateurs -->
+    <svg class="motion-svg" width="260" height="260" viewBox="0 0 100 100" style="overflow:visible;">
+      <defs>
+        <linearGradient id="ringGrad06" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1E3A8A"/>
+          <stop offset="100%" stop-color="#3B82F6"/>
+        </linearGradient>
+        <filter id="glowSvg06" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+          <feMerge><feMergeNode in="offsetblur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <circle cx="50" cy="50" r="45" fill="rgba(219,234,254,0.6)" stroke="url(#ringGrad06)" stroke-width="3.5" filter="url(#glowSvg06)"/>
+      <text x="50" y="62" text-anchor="middle" font-size="48" fill="#1E3A8A" font-family="Sora, sans-serif" font-weight="800" stroke="#2563EB" stroke-width="1">€</text>
+      <rect x="28" y="70" width="8" height="18" fill="#EF4444" opacity="0.7" rx="2">
+        <animate attributeName="height" values="18;24;18" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="40" y="60" width="8" height="28" fill="#F59E0B" opacity="0.7" rx="2">
+        <animate attributeName="height" values="28;32;28" dur="2.2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="52" y="50" width="8" height="38" fill="#22C55E" opacity="0.7" rx="2">
+        <animate attributeName="height" values="38;42;38" dur="2.5s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="64" y="65" width="8" height="23" fill="#EF4444" opacity="0.7" rx="2">
+        <animate attributeName="height" values="23;28;23" dur="1.8s" repeatCount="indefinite"/>
+      </rect>
+      <line x1="28" y1="88" x2="72" y2="88" stroke="#DC2626" stroke-width="2" stroke-dasharray="4 3"/>
+    </svg>
+
+    <h1 class="glitch-title">
+      Vous ne maîtrisez pas<br>vos <span>marges</span>
+    </h1>
+  </div>
+</div>
+</body>
+</html>

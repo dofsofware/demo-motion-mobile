@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>ShipTrack – Motion Graphic Scene 02</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+:root {
+  --p: #0F2B6D;
+  --s: #DC2626;      /* rouge pour le coût caché */
+  --s-light: #EF4444;
+  --bg: #F5F9FF;
+  --acc: #FFEDED;    /* fond léger rouge */
+  --td: #0A1A3A;
+  --tm: #2C3E66;
+  --glow: rgba(220, 38, 38, 0.3);
+}
+
+body {
+  width: 3840px;
+  height: 2160px;
+  background: radial-gradient(circle at 50% 30%, #FFF5F5 0%, var(--bg) 100%);
+  font-family: 'Sora', sans-serif;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* grille dynamique */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px);
+  background-size: 140px 140px;
+  animation: gridShift 18s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes gridShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 140px 140px; }
+}
+
+/* orbes flottantes */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+  pointer-events: none;
+  animation: orbFloat 14s ease-in-out infinite alternate;
+}
+.orb-1 {
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(220,38,38,0.2), transparent);
+  top: 10%;
+  left: -10%;
+  animation-duration: 22s;
+}
+.orb-2 {
+  width: 1100px;
+  height: 1100px;
+  background: radial-gradient(circle, rgba(15,43,109,0.18), transparent);
+  bottom: -20%;
+  right: -15%;
+  animation-duration: 26s;
+  animation-direction: alternate-reverse;
+}
+.orb-3 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(220,38,38,0.25), transparent);
+  top: 50%;
+  left: 70%;
+  animation-duration: 18s;
+  filter: blur(70px);
+}
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(5%, 8%) scale(1.1); }
+}
+
+/* conteneur principal */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 80px;
+  z-index: 20;
+  max-width: 3000px;
+  width: 85%;
+  position: relative;
+  backdrop-filter: blur(2px);
+  padding: 60px 0;
+}
+
+/* badge version "Le coût caché" */
+.badge-problem {
+  display: inline-flex;
+  align-items: center;
+  gap: 28px;
+  background: rgba(255, 237, 237, 0.75);
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(220, 38, 38, 0.5);
+  border-radius: 120px;
+  padding: 20px 70px;
+  box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(220, 38, 38, 0.2);
+  animation: badgeGlowPulse 2.8s infinite, slideDownPop 0.7s cubic-bezier(0.34, 1.3, 0.55, 1) forwards;
+  opacity: 0;
+  transform-origin: top center;
+}
+
+.pulse-dot {
+  width: 20px;
+  height: 20px;
+  background: var(--s);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--s);
+  animation: pulseDot 1.6s ease-in-out infinite;
+}
+
+.badge-text {
+  font-family: 'Sora', sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #991B1B, #DC2626);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 5px rgba(220,38,38,0.2);
+}
+
+/* Émoji argent animé */
+.money-emoji {
+  width: 280px;
+  height: 280px;
+  background: rgba(255, 237, 237, 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 130px;
+  border: 3px solid rgba(220, 38, 38, 0.4);
+  box-shadow: 0 25px 40px -12px rgba(0,0,0,0.2);
+  animation: scalePopSpin 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards, floatSoft 3s ease-in-out infinite;
+  opacity: 0;
+  transform-origin: center;
+  transition: all 0.2s;
+  filter: drop-shadow(0 5px 15px rgba(220,38,38,0.3));
+}
+
+/* Titre principal avec effet brillant */
+.glitch-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 128px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  letter-spacing: -0.02em;
+  background: linear-gradient(130deg, var(--p) 0%, #991B1B 35%, var(--s) 65%, #4A0404 100%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: textShine 4s linear infinite, riseGlow 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+  opacity: 0;
+  text-shadow: 0 4px 25px rgba(220,38,38,0.2);
+  max-width: 2800px;
+  margin: 0 auto;
+}
+
+.glitch-title span {
+  display: inline-block;
+  position: relative;
+  background: linear-gradient(135deg, #EF4444, #B91C1C);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: pulseGlowWord 2.2s ease-in-out infinite;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+/* tagline */
+.tagline {
+  font-size: 56px;
+  font-weight: 500;
+  color: var(--tm);
+  letter-spacing: -0.01em;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(4px);
+  padding: 12px 40px;
+  border-radius: 80px;
+  display: inline-block;
+  font-family: 'Sora', monospace;
+  animation: slideUpFade 0.85s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+  opacity: 0;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+}
+
+/* barre de progression */
+.prog {
+  position: absolute;
+  bottom: 90px;
+  left: 180px;
+  right: 180px;
+  height: 6px;
+  background: rgba(220, 38, 38, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  backdrop-filter: blur(2px);
+  z-index: 30;
+}
+.prog-f {
+  height: 100%;
+  background: linear-gradient(90deg, #991B1B, var(--s), #F87171);
+  border-radius: 8px;
+  width: 0;
+  animation: progFill 4s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.6);
+}
+
+/* Keyframes motion graphic (identique à la scène 01 pour cohérence) */
+@keyframes slideDownPop {
+  0% {
+    opacity: 0;
+    transform: translateY(-80px) scale(0.85);
+    filter: blur(12px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(8px) scale(1.02);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes scalePopSpin {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(-120deg);
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08) rotate(3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    filter: blur(0);
+  }
+}
+
+@keyframes riseGlow {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.92);
+    filter: blur(8px);
+  }
+  40% {
+    opacity: 0.9;
+    transform: translateY(-12px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(70px) scale(0.95);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes badgeGlowPulse {
+  0% {
+    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(220, 38, 38, 0.3);
+    border-color: rgba(220, 38, 38, 0.5);
+  }
+  50% {
+    box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.15), 0 0 0 5px rgba(220, 38, 38, 0.2);
+    border-color: rgba(220, 38, 38, 0.9);
+  }
+  100% {
+    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(220, 38, 38, 0);
+    border-color: rgba(220, 38, 38, 0.5);
+  }
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--s);
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.9;
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.4);
+  }
+}
+
+@keyframes textShine {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes pulseGlowWord {
+  0%, 100% {
+    text-shadow: 0 0 0px rgba(220,38,38,0);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(220,38,38,0.6);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes floatSoft {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes progFill {
+  0% { width: 0%; opacity: 0.5; }
+  20% { width: 15%; opacity: 1; }
+  60% { width: 68%; }
+  100% { width: 100%; }
+}
+
+/* cercle pulsant central (ton rouge) */
+.pulse-ring {
+  position: absolute;
+  width: 1200px;
+  height: 1200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.08) 0%, rgba(220, 38, 38, 0.02) 60%, transparent 85%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: largePulse 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes largePulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.92);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.12);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.92);
+    opacity: 0.5;
+  }
+}
+
+/* lignes flottantes */
+.floating-line {
+  position: absolute;
+  width: 200%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(220,38,38,0.3), transparent);
+  top: 35%;
+  left: -50%;
+  transform: rotate(8deg);
+  animation: driftLine 12s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.floating-line2 {
+  top: 70%;
+  transform: rotate(-5deg);
+  animation: driftLineReverse 14s linear infinite;
+  width: 180%;
+}
+
+@keyframes driftLine {
+  0% { transform: translateX(-30%) rotate(8deg); opacity: 0; }
+  20% { opacity: 0.5; }
+  80% { opacity: 0.5; }
+  100% { transform: translateX(40%) rotate(8deg); opacity: 0; }
+}
+
+@keyframes driftLineReverse {
+  0% { transform: translateX(40%) rotate(-5deg); opacity: 0; }
+  20% { opacity: 0.4; }
+  80% { opacity: 0.4; }
+  100% { transform: translateX(-50%) rotate(-5deg); opacity: 0; }
+}
+
+/* étincelles */
+.spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--s);
+  border-radius: 50%;
+  opacity: 0;
+  animation: sparkle 3s ease-in-out infinite;
+  pointer-events: none;
+  filter: blur(1px);
+}
+.spark-1 { top: 20%; left: 15%; animation-delay: 0s; width: 10px; height: 10px; }
+.spark-2 { top: 65%; left: 85%; animation-delay: 0.7s; }
+.spark-3 { top: 80%; left: 30%; animation-delay: 1.2s; width: 8px; height: 8px;}
+.spark-4 { top: 40%; left: 72%; animation-delay: 0.3s; }
+.spark-5 { top: 15%; left: 88%; animation-delay: 1.8s; }
+
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0); background: #F87171; }
+  30% { opacity: 0.7; transform: scale(1.2); background: #EF4444; }
+  70% { opacity: 0.4; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+/* ajustements pour 4K */
+@media (max-width: 3840px) {
+  .glitch-title { font-size: 110px; }
+  .tagline { font-size: 48px; }
+  .badge-text { font-size: 34px; }
+  .badge-problem { padding: 16px 60px; gap: 22px; }
+  .main-content { gap: 70px; }
+}
+.prog, .prog-f { display: none !important; }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+
+<!-- orbes flottantes -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- lignes dynamiques -->
+<div class="floating-line"></div>
+<div class="floating-line floating-line2"></div>
+
+<!-- particules -->
+<div class="spark spark-1"></div>
+<div class="spark spark-2"></div>
+<div class="spark spark-3"></div>
+<div class="spark spark-4"></div>
+<div class="spark spark-5"></div>
+
+<!-- cercle pulsant -->
+<div class="pulse-ring"></div>
+
+<div class="main-content">
+  <!-- Badge "Le coût caché" -->
+  <div class="badge-problem">
+    <div class="pulse-dot"></div>
+    <span class="badge-text">LE COÛT CACHÉ</span>
+  </div>
+
+  <!-- Émoji argent animé avec effet 3D subtil -->
+  <div class="money-emoji">
+    💸
+  </div>
+
+  <!-- Titre principal -->
+  <h1 class="glitch-title">
+    Et surtout… vous perdez de l'<span>argent</span><br>sans vraiment savoir où ?
+  </h1>
+
+  <!-- tagline -->
+  <p class="tagline">
+    Pertes invisibles · Marges non maîtrisées
+  </p>
+</div>
+
+<div class="prog">
+  <div class="prog-f"></div>
+</div>
+
+<!-- logo et compteur supprimés -->
+</body>
+</html>

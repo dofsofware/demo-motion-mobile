@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>ShipTrack – Motion Graphic Scene 13</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+
+:root {
+  --p:#0F2B6D; --s:#2563EB; --bg:#F5F9FF; --acc:#E0EDFF; --td:#0A1A3A; --tm:#2C3E66;
+}
+
+body {
+  width:3840px; height:2160px;
+  background:radial-gradient(circle at 50% 30%, #F0F5FF 0%, var(--bg) 100%);
+  font-family:'Sora',sans-serif; overflow:hidden; position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.grid { position:absolute; inset:0; background-image:linear-gradient(rgba(30,58,138,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(30,58,138,.045) 1px,transparent 1px); background-size:140px 140px; animation:gridShift 18s linear infinite; pointer-events:none; }
+@keyframes gridShift{0%{background-position:0 0}100%{background-position:140px 140px}}
+
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:0.4;pointer-events:none;animation:orbFloat 14s ease-in-out infinite alternate;}
+.orb-1{width:800px;height:800px;background:radial-gradient(circle,rgba(37,99,235,0.2),transparent);top:10%;left:-10%;animation-duration:22s;}
+.orb-2{width:1100px;height:1100px;background:radial-gradient(circle,rgba(15,43,109,0.18),transparent);bottom:-20%;right:-15%;animation-duration:26s;animation-direction:alternate-reverse;}
+.orb-3{width:500px;height:500px;background:radial-gradient(circle,rgba(37,99,235,0.25),transparent);top:50%;left:70%;animation-duration:18s;filter:blur(70px);}
+@keyframes orbFloat{0%{transform:translate(0,0) scale(1)}100%{transform:translate(5%,8%) scale(1.1)}}
+
+.floating-line{position:absolute;width:200%;height:2px;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.3),transparent);top:35%;left:-50%;transform:rotate(8deg);animation:driftLine 12s linear infinite;pointer-events:none;z-index:1;}
+.floating-line2{top:70%;transform:rotate(-5deg);animation:driftLineReverse 14s linear infinite;width:180%;}
+@keyframes driftLine{0%{transform:translateX(-30%) rotate(8deg);opacity:0}20%{opacity:0.5}80%{opacity:0.5}100%{transform:translateX(40%) rotate(8deg);opacity:0}}
+@keyframes driftLineReverse{0%{transform:translateX(40%) rotate(-5deg);opacity:0}20%{opacity:0.4}80%{opacity:0.4}100%{transform:translateX(-50%) rotate(-5deg);opacity:0}}
+
+.spark{position:absolute;width:6px;height:6px;background:var(--s);border-radius:50%;opacity:0;animation:sparkle 3s ease-in-out infinite;pointer-events:none;filter:blur(1px);}
+.spark-1{top:20%;left:15%;animation-delay:0s;width:10px;height:10px}
+.spark-2{top:65%;left:85%;animation-delay:0.7s}
+.spark-3{top:80%;left:30%;animation-delay:1.2s;width:8px;height:8px}
+.spark-4{top:40%;left:72%;animation-delay:0.3s}
+.spark-5{top:15%;left:88%;animation-delay:1.8s}
+@keyframes sparkle{0%{opacity:0;transform:scale(0)}30%{opacity:0.7;transform:scale(1.2)}70%{opacity:0.4}100%{opacity:0;transform:scale(0)}}
+
+.pulse-ring{position:absolute;width:1000px;height:1000px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,0.08) 0%,rgba(37,99,235,0.02) 60%,transparent 85%);top:50%;left:50%;transform:translate(-50%,-50%);animation:largePulse 5s ease-in-out infinite;pointer-events:none;z-index:0;}
+@keyframes largePulse{0%{transform:translate(-50%,-50%) scale(0.92);opacity:0.5}50%{transform:translate(-50%,-50%) scale(1.12);opacity:0.85}100%{transform:translate(-50%,-50%) scale(0.92);opacity:0.5}}
+
+/* =====================
+   LAYOUT PRINCIPAL
+   ===================== */
+.main-content {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:90px; z-index:20; max-width:3400px; width:90%; position:relative; padding:40px 0;
+}
+
+/* ---- BADGE ---- */
+.badge-problem {
+  display:inline-flex; align-items:center; gap:28px;
+  background:rgba(224,237,255,0.75); backdrop-filter:blur(12px);
+  border:2px solid rgba(37,99,235,0.5); border-radius:120px; padding:20px 70px;
+  opacity:0;
+  animation:slideDownPop 0.7s cubic-bezier(0.34,1.3,0.55,1) forwards, badgeGlowPulse 2.8s 0.7s infinite;
+}
+.pulse-dot{width:20px;height:20px;background:var(--s);border-radius:50%;box-shadow:0 0 12px var(--s);animation:pulseDot 1.6s ease-in-out infinite;}
+.badge-text{font-family:'Sora',sans-serif;font-size:38px;font-weight:700;letter-spacing:6px;text-transform:uppercase;background:linear-gradient(135deg,#1E3A8A,#2563EB);background-clip:text;-webkit-background-clip:text;color:transparent;}
+
+/* =====================
+   ZONE CENTRALE : logo ShipTrack + flèches adaptatives
+   ===================== */
+.adapt-zone {
+  display:flex; align-items:center; justify-content:center; gap:100px;
+  opacity:0;
+  animation:fadeInZone 0.6s ease 0.2s forwards;
+}
+
+/* === COLONNE ENTREPRISES (gauche) === */
+.companies-col {
+  display:flex; flex-direction:column; gap:32px;
+  align-items:flex-end;
+}
+
+.company-card {
+  display:flex; align-items:center; gap:30px;
+  background:rgba(255,255,255,0.75); backdrop-filter:blur(10px);
+  border:2px solid rgba(37,99,235,0.18); border-radius:24px;
+  padding:28px 44px;
+  box-shadow:0 8px 24px -8px rgba(0,0,0,0.1);
+  opacity:0; transform:translateX(-120px) scale(0.9);
+  position:relative; min-width:580px;
+}
+
+.company-card::after {
+  content:'';
+  position:absolute; right:-100px; top:50%;
+  transform:translateY(-50%);
+  width:80px; height:3px;
+  background:linear-gradient(90deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1));
+  border-radius:2px;
+}
+
+/* Flèche animée sur chaque ligne */
+.company-card::before {
+  content:'›';
+  position:absolute; right:-78px; top:50%;
+  transform:translateY(-55%);
+  font-size:40px; color:rgba(37,99,235,0.5);
+  animation:arrowPulse 1.5s ease-in-out infinite;
+}
+
+.company-icon {
+  width:80px; height:80px; border-radius:18px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:44px; flex-shrink:0;
+}
+
+.company-icon.import  { background:rgba(37,99,235,0.1); }
+.company-icon.export  { background:rgba(34,197,94,0.1); }
+.company-icon.logist  { background:rgba(245,158,11,0.1); }
+.company-icon.customs { background:rgba(168,85,247,0.1); }
+
+.company-name {
+  font-size:34px; font-weight:600; color:var(--p);
+  line-height:1.2;
+}
+.company-type {
+  font-size:26px; font-weight:400; color:var(--tm);
+  margin-top:4px;
+}
+
+/* Stagger d'entrée des cartes entreprises */
+.c1 { animation:cardFromLeft 0.6s cubic-bezier(0.22,1,0.36,1) 0.3s forwards; }
+.c2 { animation:cardFromLeft 0.6s cubic-bezier(0.22,1,0.36,1) 0.55s forwards; }
+.c3 { animation:cardFromLeft 0.6s cubic-bezier(0.22,1,0.36,1) 0.8s forwards; }
+.c4 { animation:cardFromLeft 0.6s cubic-bezier(0.22,1,0.36,1) 1.05s forwards; }
+
+/* === LOGO SHIPTRACK (centre) === */
+.logo-center {
+  display:flex; flex-direction:column; align-items:center; gap:24px;
+  position:relative;
+}
+
+.logo-ring {
+  position:absolute; width:400px; height:400px; border-radius:50%;
+  border:3px solid rgba(37,99,235,0.15);
+  animation:ringRotate 8s linear infinite;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+}
+.logo-ring-2 {
+  width:520px; height:520px;
+  border:2px dashed rgba(37,99,235,0.08);
+  animation:ringRotate 14s linear infinite reverse;
+}
+
+.logo-wrap {
+  width:300px; height:300px; border-radius:50%;
+  background:white;
+  border:4px solid rgba(37,99,235,0.2);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 0 16px rgba(37,99,235,0.06), 0 20px 50px -10px rgba(37,99,235,0.2);
+  z-index:2; position:relative;
+  opacity:0;
+  animation:logoAppear 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s forwards, logoGlow 3s ease-in-out 0.9s infinite;
+}
+
+.logo-wrap img {
+  width:200px; height:auto; object-fit:contain;
+}
+
+.logo-label {
+  font-size:32px; font-weight:700; color:var(--s); letter-spacing:2px;
+  z-index:2; position:relative;
+  opacity:0;
+  animation:fadeUp 0.5s ease 0.8s forwards;
+  text-align:center; line-height:1.3;
+}
+
+/* Points de connexion animés autour du logo */
+.conn-dot {
+  position:absolute; width:18px; height:18px; border-radius:50%;
+  background:var(--s); z-index:3;
+  box-shadow:0 0 0 5px rgba(37,99,235,0.2);
+  opacity:0;
+}
+.conn-dot-1 { top:50%; left:-9px; transform:translateY(-50%); animation:connDot 0.3s ease 0.5s forwards, connPulse 2s ease-in-out 0.8s infinite; }
+.conn-dot-2 { top:-9px; left:50%; transform:translateX(-50%); animation:connDot 0.3s ease 0.6s forwards, connPulse 2s ease-in-out 1s infinite; }
+.conn-dot-3 { bottom:-9px; left:50%; transform:translateX(-50%); animation:connDot 0.3s ease 0.7s forwards, connPulse 2s ease-in-out 1.2s infinite; }
+.conn-dot-4 { top:50%; right:-9px; transform:translateY(-50%); animation:connDot 0.3s ease 0.8s forwards, connPulse 2s ease-in-out 1.4s infinite; }
+
+/* === RÉSULTATS (droite) === */
+.results-col {
+  display:flex; flex-direction:column; gap:32px;
+  align-items:flex-start;
+}
+
+.result-card {
+  display:flex; align-items:center; gap:30px;
+  background:rgba(37,99,235,0.08); backdrop-filter:blur(10px);
+  border:2px solid rgba(37,99,235,0.25); border-radius:24px;
+  padding:28px 44px;
+  opacity:0; transform:translateX(120px) scale(0.9);
+  position:relative; min-width:620px;
+}
+
+/* Ligne de connexion à gauche */
+.result-card::before {
+  content:'';
+  position:absolute; left:-100px; top:50%;
+  transform:translateY(-50%);
+  width:80px; height:3px;
+  background:linear-gradient(90deg, rgba(37,99,235,0.1), rgba(37,99,235,0.5));
+  border-radius:2px;
+}
+
+.result-icon {
+  width:70px; height:70px; border-radius:50%;
+  background:var(--s); display:flex; align-items:center; justify-content:center;
+  font-size:36px; flex-shrink:0;
+  box-shadow:0 4px 16px rgba(37,99,235,0.35);
+  animation:resultIconPulse 2s ease-in-out infinite;
+}
+
+.result-text { font-size:34px; font-weight:600; color:var(--p); line-height:1.3; }
+.result-sub  { font-size:26px; font-weight:400; color:var(--tm); margin-top:4px; }
+
+/* Stagger résultats */
+.r1 { animation:cardFromRight 0.6s cubic-bezier(0.22,1,0.36,1) 0.5s forwards; }
+.r2 { animation:cardFromRight 0.6s cubic-bezier(0.22,1,0.36,1) 0.75s forwards; }
+.r3 { animation:cardFromRight 0.6s cubic-bezier(0.22,1,0.36,1) 1.0s forwards; }
+.r4 { animation:cardFromRight 0.6s cubic-bezier(0.22,1,0.36,1) 1.25s forwards; }
+
+/* ---- TITRE ---- */
+.glitch-title {
+  font-family:'Sora',sans-serif;
+  font-size:90px; font-weight:800; line-height:1.2; text-align:center;
+  letter-spacing:-0.02em;
+  background:linear-gradient(130deg,var(--p) 0%,var(--s) 45%,#3B82F6 65%,var(--p) 100%);
+  background-size:200% auto; background-clip:text; -webkit-background-clip:text; color:transparent;
+  opacity:0;
+  animation:textShine 4s linear infinite, titleRise 0.8s cubic-bezier(0.22,1,0.36,1) 1.35s forwards;
+  max-width:2800px; margin:0 auto;
+}
+.glitch-title span { display:inline-block; background:linear-gradient(135deg,#2563EB,#1E3A8A); background-clip:text; -webkit-background-clip:text; color:transparent; animation:pulseGlowWord 2.2s ease-in-out infinite; font-weight:900; }
+
+/* =====================
+   KEYFRAMES
+   ===================== */
+@keyframes slideDownPop {
+  0%   { opacity:0; transform:translateY(-80px) scale(0.85); filter:blur(12px); }
+  60%  { opacity:1; transform:translateY(8px) scale(1.02); filter:blur(0); }
+  100% { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+}
+
+@keyframes fadeInZone {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+
+@keyframes cardFromLeft {
+  0%   { opacity:0; transform:translateX(-120px) scale(0.9); filter:blur(6px); }
+  55%  { opacity:1; transform:translateX(8px) scale(1.01); }
+  100% { opacity:1; transform:translateX(0) scale(1); filter:blur(0); }
+}
+
+@keyframes cardFromRight {
+  0%   { opacity:0; transform:translateX(120px) scale(0.9); filter:blur(6px); }
+  55%  { opacity:1; transform:translateX(-8px) scale(1.01); }
+  100% { opacity:1; transform:translateX(0) scale(1); filter:blur(0); }
+}
+
+@keyframes logoAppear {
+  0%   { opacity:0; transform:scale(0.4) rotate(-20deg); filter:blur(10px); }
+  55%  { opacity:1; transform:scale(1.06) rotate(2deg); }
+  100% { opacity:1; transform:scale(1) rotate(0deg); filter:blur(0); }
+}
+
+@keyframes logoGlow {
+  0%,100% { box-shadow:0 0 0 16px rgba(37,99,235,0.06), 0 20px 50px -10px rgba(37,99,235,0.2); }
+  50%      { box-shadow:0 0 0 28px rgba(37,99,235,0.04), 0 20px 60px -8px rgba(37,99,235,0.35); }
+}
+
+@keyframes connDot {
+  from { opacity:0; transform:scale(0); }
+  to   { opacity:1; transform:scale(1); }
+}
+@keyframes connPulse {
+  0%,100% { box-shadow:0 0 0 5px rgba(37,99,235,0.2); }
+  50%      { box-shadow:0 0 0 12px rgba(37,99,235,0.08); }
+}
+
+@keyframes ringRotate {
+  from { transform:translate(-50%,-50%) rotate(0deg); }
+  to   { transform:translate(-50%,-50%) rotate(360deg); }
+}
+
+@keyframes arrowPulse {
+  0%,100% { opacity:0.4; transform:translateY(-55%) translateX(0); }
+  50%      { opacity:0.9; transform:translateY(-55%) translateX(6px); }
+}
+
+@keyframes resultIconPulse {
+  0%,100% { box-shadow:0 4px 16px rgba(37,99,235,0.35); transform:scale(1); }
+  50%      { box-shadow:0 4px 24px rgba(37,99,235,0.55); transform:scale(1.06); }
+}
+
+@keyframes fadeUp {
+  0%   { opacity:0; transform:translateY(16px); }
+  100% { opacity:1; transform:translateY(0); }
+}
+
+@keyframes titleRise {
+  0%   { opacity:0; transform:translateY(70px) scale(0.94); filter:blur(6px); }
+  55%  { opacity:1; transform:translateY(-6px) scale(1.01); }
+  100% { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+}
+
+@keyframes badgeGlowPulse {
+  0%   { box-shadow:0 15px 30px -10px rgba(0,0,0,0.1),0 0 0 0 rgba(37,99,235,0.3); border-color:rgba(37,99,235,0.5); }
+  50%  { box-shadow:0 20px 35px -8px rgba(0,0,0,0.15),0 0 0 5px rgba(37,99,235,0.2); border-color:rgba(37,99,235,0.9); }
+  100% { box-shadow:0 15px 30px -10px rgba(0,0,0,0.1),0 0 0 0 rgba(37,99,235,0); border-color:rgba(37,99,235,0.5); }
+}
+@keyframes pulseDot {
+  0%,100% { transform:scale(1); opacity:1; box-shadow:0 0 0 0 var(--s); }
+  50%      { transform:scale(1.2); opacity:0.9; box-shadow:0 0 0 8px rgba(37,99,235,0.4); }
+}
+@keyframes textShine {
+  0%   { background-position:0% 50%; }
+  100% { background-position:200% 50%; }
+}
+@keyframes pulseGlowWord {
+  0%,100% { text-shadow:0 0 0px rgba(37,99,235,0); transform:scale(1); }
+  50%      { text-shadow:0 0 12px rgba(37,99,235,0.6); transform:scale(1.02); }
+}
+
+.prog,.prog-f { display:none !important; }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+<div class="floating-line"></div><div class="floating-line floating-line2"></div>
+<div class="spark spark-1"></div><div class="spark spark-2"></div><div class="spark spark-3"></div><div class="spark spark-4"></div><div class="spark spark-5"></div>
+<div class="pulse-ring"></div>
+
+<div class="main-content">
+
+  <!-- Badge -->
+  <div class="badge-problem">
+    <div class="pulse-dot"></div>
+    <span class="badge-text">FLEXIBILITÉ TOTALE</span>
+  </div>
+
+  <!-- Zone d'adaptation centrale -->
+  <div class="adapt-zone">
+
+    <!-- ENTREPRISES (gauche) -->
+    <div class="companies-col">
+
+      <div class="company-card c1">
+        <div class="company-icon import">🚢</div>
+        <div>
+          <div class="company-name">Importateur</div>
+          <div class="company-type">Marchandises · Conteneurs</div>
+        </div>
+      </div>
+
+      <div class="company-card c2">
+        <div class="company-icon export">📦</div>
+        <div>
+          <div class="company-name">Exportateur</div>
+          <div class="company-type">Transit · Groupage</div>
+        </div>
+      </div>
+
+      <div class="company-card c3">
+        <div class="company-icon logist">🚛</div>
+        <div>
+          <div class="company-name">Commissionnaire</div>
+          <div class="company-type">Logistique · Fret</div>
+        </div>
+      </div>
+
+      <div class="company-card c4">
+        <div class="company-icon customs">🏛️</div>
+        <div>
+          <div class="company-name">Agence transit</div>
+          <div class="company-type">Dédouanement · Conseil</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LOGO SHIPTRACK (centre) -->
+    <div class="logo-center">
+      <div class="logo-ring"></div>
+      <div class="logo-ring logo-ring-2"></div>
+      <div class="logo-wrap">
+        <div class="conn-dot conn-dot-1"></div>
+        <div class="conn-dot conn-dot-2"></div>
+        <div class="conn-dot conn-dot-3"></div>
+        <div class="conn-dot conn-dot-4"></div>
+        <img src="logo.png" alt="ShipTrack" />
+      </div>
+      <div class="logo-label">ShipTrack<br>s'adapte à vous</div>
+    </div>
+
+    <!-- RÉSULTATS (droite) -->
+    <div class="results-col">
+
+      <div class="result-card r1">
+        <div class="result-icon">⚙️</div>
+        <div>
+          <div class="result-text">Workflows sur mesure</div>
+          <div class="result-sub">Vos règles, vos étapes</div>
+        </div>
+      </div>
+
+      <div class="result-card r2">
+        <div class="result-icon">📊</div>
+        <div>
+          <div class="result-text">Tableaux de bord dédiés</div>
+          <div class="result-sub">Visibilité en temps réel</div>
+        </div>
+      </div>
+
+      <div class="result-card r3">
+        <div class="result-icon">🔔</div>
+        <div>
+          <div class="result-text">Alertes personnalisées</div>
+          <div class="result-sub">Notifications intelligentes</div>
+        </div>
+      </div>
+
+      <div class="result-card r4">
+        <div class="result-icon">📋</div>
+        <div>
+          <div class="result-text">Documents automatisés</div>
+          <div class="result-sub">Vos modèles, vos formats</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Titre -->
+  <h1 class="glitch-title">
+    Chaque entreprise a sa façon de travailler.<br>ShipTrack <span>s'adapte à vous.</span>
+  </h1>
+
+</div>
+</body>
+</html>

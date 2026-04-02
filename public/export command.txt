@@ -1,0 +1,1 @@
+npx remotion render ShipTrack out/video.mp4 \ --codec=h264 \ --crf=12 \ --audio-codec=aac \ --audio-bitrate=320k \ --image-format=png \ --scale=1

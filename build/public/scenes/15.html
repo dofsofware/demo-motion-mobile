@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>ShipTrack – Motion Graphic Scene 15 (Retard & Alertes)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+:root {
+  --p: #0F2B6D;
+  --s: #EF4444;      /* rouge pour les alertes */
+  --s-light: #F87171;
+  --bg: #F5F9FF;
+  --acc: #FFEDED;
+  --td: #0A1A3A;
+  --tm: #2C3E66;
+  --glow: rgba(239, 68, 68, 0.3);
+}
+
+body {
+  width: 3840px;
+  height: 2160px;
+  background: radial-gradient(circle at 50% 30%, #FFF5F5 0%, var(--bg) 100%);
+  font-family: 'Sora', sans-serif;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* grille dynamique */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px);
+  background-size: 140px 140px;
+  animation: gridShift 18s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes gridShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 140px 140px; }
+}
+
+/* orbes flottantes */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+  pointer-events: none;
+  animation: orbFloat 14s ease-in-out infinite alternate;
+}
+.orb-1 {
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(239,68,68,0.2), transparent);
+  top: 10%;
+  left: -10%;
+  animation-duration: 22s;
+}
+.orb-2 {
+  width: 1100px;
+  height: 1100px;
+  background: radial-gradient(circle, rgba(15,43,109,0.18), transparent);
+  bottom: -20%;
+  right: -15%;
+  animation-duration: 26s;
+  animation-direction: alternate-reverse;
+}
+.orb-3 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(239,68,68,0.25), transparent);
+  top: 50%;
+  left: 70%;
+  animation-duration: 18s;
+  filter: blur(70px);
+}
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(5%, 8%) scale(1.1); }
+}
+
+/* conteneur principal */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  z-index: 20;
+  max-width: 3000px;
+  width: 85%;
+  position: relative;
+  backdrop-filter: blur(2px);
+  padding: 40px 0;
+}
+
+/* badge */
+.badge-problem {
+  display: inline-flex;
+  align-items: center;
+  gap: 28px;
+  background: rgba(255, 237, 237, 0.75);
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(239, 68, 68, 0.5);
+  border-radius: 120px;
+  padding: 20px 70px;
+  box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(239, 68, 68, 0.2);
+  animation: badgeGlowPulse 2.8s infinite, slideDownPop 0.7s cubic-bezier(0.34, 1.3, 0.55, 1) forwards;
+  opacity: 0;
+  transform-origin: top center;
+}
+
+.pulse-dot {
+  width: 20px;
+  height: 20px;
+  background: var(--s);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--s);
+  animation: pulseDot 1.6s ease-in-out infinite;
+}
+
+.badge-text {
+  font-family: 'Sora', sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #991B1B, #EF4444);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* SVG icon cloche avec animation de sonnerie */
+.motion-svg {
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+  animation: scalePopSpin 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards, ringBell 1.2s ease-in-out 1.8s infinite;
+  opacity: 0;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes ringBell {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(12deg); }
+  75% { transform: rotate(-8deg); }
+}
+
+/* titre principal */
+.glitch-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 100px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  letter-spacing: -0.02em;
+  background: linear-gradient(130deg, var(--p) 0%, #991B1B 35%, var(--s) 65%, #4A0404 100%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: textShine 4s linear infinite, riseGlow 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+  opacity: 0;
+  max-width: 2800px;
+  margin: 0 auto;
+}
+
+.glitch-title span {
+  display: inline-block;
+  background: linear-gradient(135deg, #EF4444, #B91C1C);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: pulseGlowWord 2.2s ease-in-out infinite;
+  font-weight: 900;
+}
+
+/* =====================
+   TIMELINE & ALERTE
+   ===================== */
+.timeline-section {
+  width: 100%;
+  background: rgba(224, 237, 255, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 48px;
+  padding: 50px 60px;
+  border: 2px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.15);
+  margin-top: 20px;
+  opacity: 0;
+  animation: slideUpFade 0.8s cubic-bezier(0.2, 0.9, 0.4, 1) 0.5s forwards;
+}
+
+.timeline-title {
+  font-size: 42px;
+  font-weight: 600;
+  color: var(--p);
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.timeline-title span {
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--tm);
+}
+
+.steps-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  gap: 20px;
+}
+
+/* ligne de connexion entre étapes */
+.steps-container::before {
+  content: '';
+  position: absolute;
+  top: 45px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(37, 99, 235, 0.2);
+  border-radius: 4px;
+  z-index: 0;
+}
+
+.step-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: stepRise 0.5s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+}
+.step-item:nth-child(1) { animation-delay: 0.6s; }
+.step-item:nth-child(2) { animation-delay: 0.75s; }
+.step-item:nth-child(3) { animation-delay: 0.9s; }
+.step-item:nth-child(4) { animation-delay: 1.05s; }
+
+.step-icon {
+  width: 90px;
+  height: 90px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(37, 99, 235, 0.2);
+  transition: all 0.2s;
+}
+.step-name {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--p);
+  text-align: center;
+}
+.step-date {
+  font-size: 24px;
+  color: var(--tm);
+  font-weight: 400;
+}
+
+/* étape en retard (dédouanement) */
+.step-item.delayed .step-icon {
+  background: #FFEDED;
+  border-color: #EF4444;
+  box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.2);
+  animation: shakeWarning 0.5s ease-in-out 1.2s, pulseRed 1.2s infinite 1.8s;
+}
+.step-item.delayed .step-name {
+  color: #DC2626;
+}
+.step-item.delayed .step-date {
+  color: #DC2626;
+  font-weight: 500;
+}
+.delay-badge {
+  background: #EF4444;
+  color: white;
+  padding: 6px 20px;
+  border-radius: 40px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  margin-top: 8px;
+  animation: fadeSlideUp 0.4s ease 1.2s forwards;
+  opacity: 0;
+}
+
+@keyframes shakeWarning {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+@keyframes pulseRed {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* notification d'alerte */
+.alert-card {
+  position: fixed;
+  top: 120px;
+  right: 80px;
+  width: 680px;
+  background: white;
+  border-left: 12px solid #EF4444;
+  border-radius: 32px;
+  padding: 32px 40px;
+  box-shadow: 0 30px 50px -20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.95);
+  z-index: 30;
+  opacity: 0;
+  transform: translateX(150px) scale(0.9);
+  animation: slideAlert 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.2) 1.4s forwards;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.alert-icon {
+  font-size: 48px;
+  background: #FFEDED;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.alert-content {
+  flex: 1;
+}
+.alert-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #DC2626;
+  margin-bottom: 8px;
+}
+.alert-message {
+  font-size: 26px;
+  color: var(--tm);
+  line-height: 1.3;
+}
+.alert-time {
+  font-size: 20px;
+  color: #9CA3AF;
+  margin-top: 12px;
+}
+.alert-btn {
+  background: #EF4444;
+  color: white;
+  border: none;
+  border-radius: 48px;
+  padding: 12px 28px;
+  font-size: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 12px;
+  font-family: 'Sora', sans-serif;
+}
+.alert-btn:hover {
+  transform: scale(1.02);
+  background: #DC2626;
+}
+
+@keyframes slideAlert {
+  0% { opacity: 0; transform: translateX(150px) scale(0.9); filter: blur(8px); }
+  70% { opacity: 1; transform: translateX(-10px) scale(1.01); filter: blur(0); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* Keyframes généraux */
+@keyframes slideDownPop {
+  0% { opacity: 0; transform: translateY(-80px) scale(0.85); filter: blur(12px); }
+  60% { opacity: 1; transform: translateY(8px) scale(1.02); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes scalePopSpin {
+  0% { opacity: 0; transform: scale(0.2) rotate(-120deg); filter: blur(10px); }
+  50% { opacity: 1; transform: scale(1.08) rotate(3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); }
+}
+@keyframes riseGlow {
+  0% { opacity: 0; transform: translateY(100px) scale(0.92); filter: blur(8px); }
+  40% { opacity: 0.9; transform: translateY(-12px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes slideUpFade {
+  0% { opacity: 0; transform: translateY(80px); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes stepRise {
+  0% { opacity: 0; transform: translateY(40px); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes badgeGlowPulse {
+  0% { box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1), 0 0 0 0 rgba(239,68,68,0.3); border-color: rgba(239,68,68,0.5); }
+  50% { box-shadow: 0 20px 35px -8px rgba(0,0,0,0.15), 0 0 0 5px rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.9); }
+  100% { box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1), 0 0 0 0 rgba(239,68,68,0); border-color: rgba(239,68,68,0.5); }
+}
+@keyframes pulseDot {
+  0%,100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 var(--s); }
+  50% { transform: scale(1.2); opacity: 0.9; box-shadow: 0 0 0 8px rgba(239,68,68,0.4); }
+}
+@keyframes textShine {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes pulseGlowWord {
+  0%,100% { text-shadow: 0 0 0px rgba(239,68,68,0); transform: scale(1); }
+  50% { text-shadow: 0 0 12px rgba(239,68,68,0.6); transform: scale(1.02); }
+}
+
+/* autres éléments */
+.pulse-ring {
+  position: absolute;
+  width: 1000px;
+  height: 1000px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.02) 60%, transparent 85%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: largePulse 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes largePulse {
+  0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.5; }
+  50% { transform: translate(-50%, -50%) scale(1.12); opacity: 0.85; }
+  100% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.5; }
+}
+.floating-line {
+  position: absolute;
+  width: 200%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(239,68,68,0.3), transparent);
+  top: 35%;
+  left: -50%;
+  transform: rotate(8deg);
+  animation: driftLine 12s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+.floating-line2 {
+  top: 70%;
+  transform: rotate(-5deg);
+  animation: driftLineReverse 14s linear infinite;
+  width: 180%;
+}
+@keyframes driftLine {
+  0% { transform: translateX(-30%) rotate(8deg); opacity: 0; }
+  20% { opacity: 0.5; }
+  80% { opacity: 0.5; }
+  100% { transform: translateX(40%) rotate(8deg); opacity: 0; }
+}
+@keyframes driftLineReverse {
+  0% { transform: translateX(40%) rotate(-5deg); opacity: 0; }
+  20% { opacity: 0.4; }
+  80% { opacity: 0.4; }
+  100% { transform: translateX(-50%) rotate(-5deg); opacity: 0; }
+}
+.spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--s);
+  border-radius: 50%;
+  opacity: 0;
+  animation: sparkle 3s ease-in-out infinite;
+  pointer-events: none;
+  filter: blur(1px);
+}
+.spark-1 { top: 20%; left: 15%; animation-delay: 0s; width: 10px; height: 10px; }
+.spark-2 { top: 65%; left: 85%; animation-delay: 0.7s; }
+.spark-3 { top: 80%; left: 30%; animation-delay: 1.2s; width: 8px; height: 8px;}
+.spark-4 { top: 40%; left: 72%; animation-delay: 0.3s; }
+.spark-5 { top: 15%; left: 88%; animation-delay: 1.8s; }
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0); background: #F87171; }
+  30% { opacity: 0.7; transform: scale(1.2); background: #EF4444; }
+  70% { opacity: 0.4; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(0); }
+}
+@media (max-width: 3840px) {
+  .glitch-title { font-size: 90px; }
+  .badge-text { font-size: 34px; }
+  .badge-problem { padding: 16px 60px; gap: 22px; }
+  .main-content { gap: 60px; }
+  .step-name { font-size: 28px; }
+  .step-date { font-size: 22px; }
+  .alert-card { width: 620px; padding: 28px 32px; }
+  .alert-title { font-size: 28px; }
+  .alert-message { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="floating-line"></div>
+<div class="floating-line floating-line2"></div>
+<div class="spark spark-1"></div>
+<div class="spark spark-2"></div>
+<div class="spark spark-3"></div>
+<div class="spark spark-4"></div>
+<div class="spark spark-5"></div>
+<div class="pulse-ring"></div>
+
+<div class="main-content">
+  <div class="badge-problem">
+    <div class="pulse-dot"></div>
+    <span class="badge-text">ALERTES AUTOMATIQUES</span>
+  </div>
+
+  <svg class="motion-svg" width="280" height="280" viewBox="0 0 100 100" style="overflow: visible;">
+    <defs>
+      <linearGradient id="ringGrad15" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#991B1B" />
+        <stop offset="100%" stop-color="#EF4444" />
+      </linearGradient>
+      <filter id="glowSvg15" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+        <feMerge><feMergeNode in="offsetblur" /><feMergeNode in="SourceGraphic" /></feMerge>
+      </filter>
+    </defs>
+    <circle cx="50" cy="50" r="45" fill="rgba(254, 226, 226, 0.7)" stroke="url(#ringGrad15)" stroke-width="3" filter="url(#glowSvg15)"/>
+    <path d="M30 60 L30 55 Q30 35 50 35 Q70 35 70 55 L70 60" fill="none" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+    <path d="M35 60 L65 60" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="50" cy="67" r="4" fill="#EF4444"/>
+    <rect x="48" y="44" width="4" height="14" fill="#EF4444" rx="1"/>
+    <circle cx="50" cy="62" r="2" fill="#EF4444"/>
+    <circle cx="50" cy="50" r="43" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 5" opacity="0.6">
+      <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="50" cy="50" r="30" fill="none" stroke="#EF4444" stroke-width="1.5" opacity="0">
+      <animate attributeName="r" values="30;45;30" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.6;0;0.6" dur="2s" repeatCount="indefinite" />
+    </circle>
+  </svg>
+
+  <h1 class="glitch-title">
+    En cas de retard ?<br>ShipTrack vous <span>alerte</span><br>automatiquement.
+  </h1>
+</div>
+
+<!-- Timeline avec étape en retard -->
+<div class="timeline-section">
+  <div class="timeline-title">
+    📦 Suivi dossier #2850 · Shanghai → Dakar
+    <span>(mise à jour temps réel)</span>
+  </div>
+  <div class="steps-container">
+    <div class="step-item">
+      <div class="step-icon">🚢</div>
+      <div class="step-name">Embarquement</div>
+      <div class="step-date">14 mars · 08:00</div>
+    </div>
+    <div class="step-item">
+      <div class="step-icon">🌊</div>
+      <div class="step-name">En mer</div>
+      <div class="step-date">15–26 mars</div>
+    </div>
+    <div class="step-item delayed">
+      <div class="step-icon">⚠️</div>
+      <div class="step-name">Dédouanement</div>
+      <div class="step-date">Délai prévu : 28 mars → retard</div>
+      <div class="delay-badge">RETARD</div>
+    </div>
+    <div class="step-item">
+      <div class="step-icon">🏠</div>
+      <div class="step-name">Livraison</div>
+      <div class="step-date">Prévue le 30 mars</div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification d'alerte -->
+<div class="alert-card">
+  <div class="alert-icon">🔔</div>
+  <div class="alert-content">
+    <div class="alert-title">Alerte retard · Dédouanement</div>
+    <div class="alert-message">Dossier #2850 : documents manquants – action requise avant 18h.</div>
+    <div class="alert-time">Reçu il y a 2 minutes</div>
+    <button class="alert-btn" onclick="this.parentElement.parentElement.style.opacity='0'">Voir les détails</button>
+  </div>
+</div>
+
+<!-- petite animation de cloche qui sonne en JS supplémentaire (facultatif) -->
+<script>
+  // Ajoute un effet de secousse supplémentaire sur la cloche SVG après l'alerte
+  setTimeout(() => {
+    const bell = document.querySelector('.motion-svg');
+    if(bell) {
+      bell.style.animation = 'ringBell 0.6s ease-in-out 2, floatSoft 3s ease-in-out infinite';
+      setTimeout(() => {
+        bell.style.animation = 'scalePopSpin 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards, ringBell 1.2s ease-in-out 1.8s infinite, floatSoft 3s ease-in-out infinite';
+      }, 800);
+    }
+  }, 1700);
+</script>
+</body>
+</html>

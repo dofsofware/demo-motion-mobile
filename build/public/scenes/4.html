@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>ShipTrack – Motion Graphic Scene 04 | Pleine hauteur</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+:root {
+  --p: #0F2B6D;
+  --s: #2563EB;
+  --bg: #F5F9FF;
+  --acc: #E0EDFF;
+  --td: #0A1A3A;
+  --tm: #2C3E66;
+  --glow: rgba(37, 99, 235, 0.3);
+}
+
+body {
+  width: 3840px;
+  height: 2160px;
+  background: radial-gradient(circle at 50% 30%, #F0F5FF 0%, var(--bg) 100%);
+  font-family: 'Sora', sans-serif;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========== BACKGROUND DYNAMICS ========== */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(30, 58, 138, 0.045) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px);
+  background-size: 140px 140px;
+  animation: gridShift 18s linear infinite;
+  pointer-events: none;
+}
+@keyframes gridShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 140px 140px; }
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+  pointer-events: none;
+  animation: orbFloat 14s ease-in-out infinite alternate;
+}
+.orb-1 {
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.2), transparent);
+  top: 10%;
+  left: -10%;
+  animation-duration: 22s;
+}
+.orb-2 {
+  width: 1100px;
+  height: 1100px;
+  background: radial-gradient(circle, rgba(15, 43, 109, 0.18), transparent);
+  bottom: -20%;
+  right: -15%;
+  animation-duration: 26s;
+  animation-direction: alternate-reverse;
+}
+.orb-3 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.25), transparent);
+  top: 50%;
+  left: 70%;
+  animation-duration: 18s;
+  filter: blur(70px);
+}
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(5%, 8%) scale(1.1); }
+}
+
+.floating-line {
+  position: absolute;
+  width: 200%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.3), transparent);
+  top: 35%;
+  left: -50%;
+  transform: rotate(8deg);
+  animation: driftLine 12s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+.floating-line2 {
+  top: 70%;
+  transform: rotate(-5deg);
+  animation: driftLineReverse 14s linear infinite;
+  width: 180%;
+}
+@keyframes driftLine {
+  0% { transform: translateX(-30%) rotate(8deg); opacity: 0; }
+  20% { opacity: 0.5; }
+  80% { opacity: 0.5; }
+  100% { transform: translateX(40%) rotate(8deg); opacity: 0; }
+}
+@keyframes driftLineReverse {
+  0% { transform: translateX(40%) rotate(-5deg); opacity: 0; }
+  20% { opacity: 0.4; }
+  80% { opacity: 0.4; }
+  100% { transform: translateX(-50%) rotate(-5deg); opacity: 0; }
+}
+
+.spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--s);
+  border-radius: 50%;
+  opacity: 0;
+  animation: sparkle 3s ease-in-out infinite;
+  pointer-events: none;
+  filter: blur(1px);
+}
+.spark-1 { top: 20%; left: 15%; animation-delay: 0s; width: 10px; height: 10px; }
+.spark-2 { top: 65%; left: 85%; animation-delay: 0.7s; }
+.spark-3 { top: 80%; left: 30%; animation-delay: 1.2s; width: 8px; height: 8px; }
+.spark-4 { top: 40%; left: 72%; animation-delay: 0.3s; }
+.spark-5 { top: 15%; left: 88%; animation-delay: 1.8s; }
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0); background: #60A5FA; }
+  30% { opacity: 0.7; transform: scale(1.2); background: #3B82F6; }
+  70% { opacity: 0.4; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 1200px;
+  height: 1200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 60%, transparent 85%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: largePulse 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes largePulse {
+  0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.5; }
+  50% { transform: translate(-50%, -50%) scale(1.12); opacity: 0.85; }
+  100% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.5; }
+}
+
+/* ========== MAIN LAYOUT : IMAGE PLEINE HAUTEUR SANS CADRE ========== */
+.main-content {
+  position: relative;
+  z-index: 20;
+  width: 90%;
+  max-width: 3200px;
+  display: flex;
+  align-items: stretch;      /* assure que les deux colonnes aient la même hauteur */
+  gap: 80px;
+  padding: 60px 40px;
+  margin: 0 auto;
+}
+
+/* Colonne gauche : image sans aucun cadre, prend toute la hauteur */
+.image-col {
+  flex: 1.1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  opacity: 0;
+  transform: translateX(-350px);
+  filter: blur(12px);
+  animation: slideInLeftPro 0.95s cubic-bezier(0.2, 1.1, 0.35, 1) forwards;
+}
+
+/* Image : aucun cadre, aucun arrondi, aucune ombre, occupe 100% de la hauteur disponible */
+.visibility-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;        /* remplit la hauteur sans laisser d'espace, pas de cadre */
+  display: block;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  transition: none;
+}
+/* Aucun effet hover qui ajouterait un cadre ou ombre */
+.visibility-img:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Colonne droite : texte + badge */
+.text-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+  opacity: 0;
+  transform: translateX(350px);
+  filter: blur(12px);
+  animation: slideInRightPro 0.95s cubic-bezier(0.2, 1.1, 0.35, 1) forwards;
+}
+
+/* Badge "PROBLÈME 1/3" */
+.problem-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(224, 237, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(37, 99, 235, 0.6);
+  border-radius: 100px;
+  padding: 14px 42px;
+  width: fit-content;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+.pulse-dot-small {
+  width: 18px;
+  height: 18px;
+  background: var(--s);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--s);
+  animation: pulseDotMini 1.6s ease-in-out infinite;
+}
+.badge-label {
+  font-family: 'Sora', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #1E3A8A, #2563EB);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+@keyframes pulseDotMini {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 var(--s); }
+  50% { transform: scale(1.25); opacity: 0.9; box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.35); }
+}
+
+/* Titre principal */
+.visibility-headline {
+  font-family: 'Sora', sans-serif;
+  font-size: 112px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  background: linear-gradient(130deg, #0F2B6D 0%, #1E3A8A 25%, #2563EB 55%, #3B82F6 85%, #0F2B6D 100%);
+  background-size: 250% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: textShineFlow 3.5s linear infinite;
+  margin-bottom: 18px;
+}
+
+/* Sous-texte */
+.sub-description {
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.4;
+  max-width: 85%;
+  letter-spacing: -0.2px;
+  border-left: 5px solid var(--s);
+  padding-left: 28px;
+  background: linear-gradient(120deg, #2C3E66, #4B6A9B);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+
+/* Élément KPI */
+.stats-chip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+.dot-accent {
+  width: 10px;
+  height: 10px;
+  background: #2563EB;
+  border-radius: 50%;
+  animation: pulseGlow 2s infinite;
+}
+.stats-text {
+  font-size: 24px;
+  font-weight: 500;
+  color: #1E3A8A;
+  letter-spacing: 0.5px;
+  background: rgba(37, 99, 235, 0.1);
+  padding: 8px 20px;
+  border-radius: 60px;
+  backdrop-filter: blur(4px);
+}
+@keyframes pulseGlow {
+  0%,100% { opacity: 0.5; box-shadow: 0 0 0 0 #2563EB; }
+  50% { opacity: 1; box-shadow: 0 0 0 5px rgba(37,99,235,0.2); }
+}
+
+/* Animations d’entrée : gauche→droite pour l’image, droite→gauche pour le texte */
+@keyframes slideInLeftPro {
+  0% {
+    opacity: 0;
+    transform: translateX(-380px);
+    filter: blur(18px);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateX(12px);
+    filter: blur(2px);
+  }
+  70% {
+    transform: translateX(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes slideInRightPro {
+  0% {
+    opacity: 0;
+    transform: translateX(380px);
+    filter: blur(18px);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateX(-12px);
+    filter: blur(2px);
+  }
+  70% {
+    transform: translateX(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes textShineFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Animation du mot "manquez" */
+@keyframes pulseGlowWord {
+  0% { text-shadow: 0 0 0px rgba(37,99,235,0); transform: scale(1); }
+  50% { text-shadow: 0 0 14px rgba(37,99,235,0.7); transform: scale(1.02); }
+  100% { text-shadow: 0 0 0px rgba(37,99,235,0); transform: scale(1); }
+}
+
+.visibility-headline span {
+  display: inline-block;
+  animation: pulseGlowWord 2.2s ease-in-out infinite;
+}
+
+/* Ajustements responsive 4K */
+@media (max-width: 3840px) {
+  .visibility-headline {
+    font-size: 98px;
+  }
+  .sub-description {
+    font-size: 34px;
+  }
+  .badge-label {
+    font-size: 28px;
+  }
+  .stats-text {
+    font-size: 22px;
+  }
+}
+
+/* Suppression de tout élément inutile */
+.prog, .prog-f { display: none !important; }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="floating-line"></div>
+<div class="floating-line floating-line2"></div>
+<div class="spark spark-1"></div>
+<div class="spark spark-2"></div>
+<div class="spark spark-3"></div>
+<div class="spark spark-4"></div>
+<div class="spark spark-5"></div>
+<div class="pulse-ring"></div>
+
+<div class="main-content">
+  <!-- Colonne gauche : image pleine hauteur, sans cadre -->
+  <div class="image-col">
+    <img class="visibility-img" src="visibility.png" alt="Visibilité maritime - ShipTrack" onerror="this.onerror=null;this.src='https://placehold.co/1200x1600/0F2B6D/FFFFFF?text=visibility.png';">
+  </div>
+
+  <!-- Colonne droite : texte + badge -->
+  <div class="text-col">
+    <div class="problem-badge">
+      <div class="pulse-dot-small"></div>
+      <span class="badge-label">PROBLÈME 1/3</span>
+    </div>
+    
+    <div class="visibility-headline">
+      Vous <span>manquez</span><br>de visibilité
+    </div>
+    
+    <div class="sub-description">
+      Données opaques, flotte invisible.<br>
+      Aucun suivi temps réel sur vos actifs.
+    </div>
+    
+    <div class="stats-chip">
+      <div class="dot-accent"></div>
+      <div class="stats-text">-47% d’efficacité opérationnelle</div>
+      <div class="dot-accent" style="background:#EF4444;"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

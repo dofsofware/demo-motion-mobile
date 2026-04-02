@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>ShipTrack – Motion Graphic Scene 12</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+
+:root {
+  --p:#0F2B6D; --s:#2563EB; --bg:#F5F9FF; --acc:#E0EDFF; --td:#0A1A3A; --tm:#2C3E66;
+}
+
+body {
+  width:3840px; height:2160px;
+  background:radial-gradient(circle at 50% 30%, #F0F5FF 0%, var(--bg) 100%);
+  font-family:'Sora',sans-serif; overflow:hidden; position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.grid { position:absolute; inset:0; background-image:linear-gradient(rgba(30,58,138,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(30,58,138,.045) 1px,transparent 1px); background-size:140px 140px; animation:gridShift 18s linear infinite; pointer-events:none; }
+@keyframes gridShift { 0%{background-position:0 0}100%{background-position:140px 140px} }
+
+.orb { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.4; pointer-events:none; animation:orbFloat 14s ease-in-out infinite alternate; }
+.orb-1 { width:800px; height:800px; background:radial-gradient(circle,rgba(37,99,235,0.2),transparent); top:10%; left:-10%; animation-duration:22s; }
+.orb-2 { width:1100px; height:1100px; background:radial-gradient(circle,rgba(15,43,109,0.18),transparent); bottom:-20%; right:-15%; animation-duration:26s; animation-direction:alternate-reverse; }
+.orb-3 { width:500px; height:500px; background:radial-gradient(circle,rgba(37,99,235,0.25),transparent); top:50%; left:70%; animation-duration:18s; filter:blur(70px); }
+@keyframes orbFloat { 0%{transform:translate(0,0) scale(1)}100%{transform:translate(5%,8%) scale(1.1)} }
+
+.floating-line { position:absolute; width:200%; height:2px; background:linear-gradient(90deg,transparent,rgba(37,99,235,0.3),transparent); top:35%; left:-50%; transform:rotate(8deg); animation:driftLine 12s linear infinite; pointer-events:none; z-index:1; }
+.floating-line2 { top:70%; transform:rotate(-5deg); animation:driftLineReverse 14s linear infinite; width:180%; }
+@keyframes driftLine { 0%{transform:translateX(-30%) rotate(8deg);opacity:0}20%{opacity:0.5}80%{opacity:0.5}100%{transform:translateX(40%) rotate(8deg);opacity:0} }
+@keyframes driftLineReverse { 0%{transform:translateX(40%) rotate(-5deg);opacity:0}20%{opacity:0.4}80%{opacity:0.4}100%{transform:translateX(-50%) rotate(-5deg);opacity:0} }
+
+.spark { position:absolute; width:6px; height:6px; background:var(--s); border-radius:50%; opacity:0; animation:sparkle 3s ease-in-out infinite; pointer-events:none; filter:blur(1px); }
+.spark-1{top:20%;left:15%;animation-delay:0s;width:10px;height:10px}
+.spark-2{top:65%;left:85%;animation-delay:0.7s}
+.spark-3{top:80%;left:30%;animation-delay:1.2s;width:8px;height:8px}
+.spark-4{top:40%;left:72%;animation-delay:0.3s}
+.spark-5{top:15%;left:88%;animation-delay:1.8s}
+@keyframes sparkle{0%{opacity:0;transform:scale(0);background:#60A5FA}30%{opacity:0.7;transform:scale(1.2);background:#3B82F6}70%{opacity:0.4;transform:scale(0.8)}100%{opacity:0;transform:scale(0)}}
+
+.pulse-ring { position:absolute; width:1200px; height:1200px; border-radius:50%; background:radial-gradient(circle,rgba(37,99,235,0.08) 0%,rgba(37,99,235,0.02) 60%,transparent 85%); top:50%; left:50%; transform:translate(-50%,-50%); animation:largePulse 5s ease-in-out infinite; pointer-events:none; z-index:0; }
+@keyframes largePulse{0%{transform:translate(-50%,-50%) scale(0.92);opacity:0.5}50%{transform:translate(-50%,-50%) scale(1.12);opacity:0.85}100%{transform:translate(-50%,-50%) scale(0.92);opacity:0.5}}
+
+/* =====================
+   LAYOUT
+   ===================== */
+.main-content {
+  display:flex; align-items:center; gap:180px;
+  z-index:20; padding:0 280px; width:100%; position:relative;
+}
+
+/* COLONNE GAUCHE */
+.left-col {
+  flex:1; display:flex; flex-direction:column; gap:60px;
+}
+
+.badge-problem {
+  display:inline-flex; align-items:center; gap:28px;
+  background:rgba(224,237,255,0.75); backdrop-filter:blur(12px);
+  border:2px solid rgba(37,99,235,0.5); border-radius:120px; padding:18px 56px;
+  opacity:0; width:fit-content;
+  animation:slideFromLeft 0.6s cubic-bezier(0.22,1,0.36,1) forwards, badgeGlowPulse 2.8s 0.6s infinite;
+}
+.pulse-dot { width:20px; height:20px; background:var(--s); border-radius:50%; box-shadow:0 0 12px var(--s); animation:pulseDot 1.6s ease-in-out infinite; }
+.badge-text { font-family:'Sora',sans-serif; font-size:34px; font-weight:700; letter-spacing:6px; text-transform:uppercase; background:linear-gradient(135deg,#1E3A8A,#2563EB); background-clip:text; -webkit-background-clip:text; color:transparent; }
+
+.title {
+  font-family:'Sora',sans-serif; font-size:90px; font-weight:800; line-height:1.1;
+  background:linear-gradient(130deg,var(--p) 0%,var(--s) 45%,#3B82F6 65%,var(--p) 100%);
+  background-size:200% auto; background-clip:text; -webkit-background-clip:text; color:transparent;
+  opacity:0;
+  animation:textShine 4s linear infinite, slideFromLeft 0.65s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+}
+.title span { display:inline-block; background:linear-gradient(135deg,#2563EB,#1E3A8A); background-clip:text; -webkit-background-clip:text; color:transparent; animation:pulseGlowWord 2.2s ease-in-out infinite; font-weight:900; }
+
+/* =====================
+   COLONNE DROITE — WORKFLOW
+   ===================== */
+.right-panel {
+  flex:0 0 1000px;
+  opacity:0;
+  animation:slideFromRight 0.65s cubic-bezier(0.22,1,0.36,1) 0.05s forwards;
+}
+
+.workflow-container {
+  background:rgba(224,237,255,0.7); backdrop-filter:blur(12px);
+  border:2px solid rgba(37,99,235,0.3); border-radius:40px;
+  padding:60px; box-shadow:0 25px 45px -12px rgba(0,0,0,0.15);
+  position:relative; overflow:hidden;
+}
+
+/* shimmer */
+.workflow-container::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,transparent 60%);
+  pointer-events:none;
+}
+
+.workflow-title {
+  font-size:40px; font-weight:700; color:var(--p);
+  margin-bottom:50px; font-family:'Sora',sans-serif;
+  opacity:0;
+  animation:titlePop 0.4s cubic-bezier(0.22,1,0.36,1) 0.2s forwards;
+}
+
+/* ---- ÉTAPES — apparaissent une par une ---- */
+.workflow-step {
+  display:flex; align-items:center; gap:32px;
+  margin-bottom:28px; position:relative;
+  opacity:0; transform:translateX(60px) scale(0.94);
+}
+
+/* Stagger serré pour rester dans 2s au total (badge=0, titre=0.1s, panel=0.05s, steps 0.3→1.2s) */
+.step-1 { animation: stepReveal 0.45s cubic-bezier(0.22,1,0.36,1) 0.3s forwards; }
+.step-2 { animation: stepReveal 0.45s cubic-bezier(0.22,1,0.36,1) 0.6s forwards; }
+.step-3 { animation: stepReveal 0.45s cubic-bezier(0.22,1,0.36,1) 0.9s forwards; }
+.step-4 { animation: stepReveal 0.45s cubic-bezier(0.22,1,0.36,1) 1.2s forwards; }
+
+/* Ligne de connexion verticale entre étapes */
+.workflow-step:not(:last-child)::after {
+  content:'';
+  position:absolute;
+  left:27px; top:68px;
+  width:4px; height:28px;
+  background:linear-gradient(180deg, rgba(37,99,235,0.4), rgba(37,99,235,0.1));
+  border-radius:2px;
+}
+
+/* Numéro */
+.step-number {
+  width:60px; height:60px; border-radius:50%;
+  background:var(--s);
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; font-weight:700; color:white; flex-shrink:0;
+  box-shadow:0 4px 16px rgba(37,99,235,0.35);
+  animation:numberPulse 2.5s ease-in-out infinite;
+}
+
+/* Chaque numéro a un délai de pulse décalé */
+.step-1 .step-number { animation-delay:0s; }
+.step-2 .step-number { animation-delay:0.5s; }
+.step-3 .step-number { animation-delay:1s; }
+.step-4 .step-number { animation-delay:1.5s; }
+
+@keyframes numberPulse {
+  0%,100% { box-shadow:0 4px 16px rgba(37,99,235,0.35); transform:scale(1); }
+  50%      { box-shadow:0 4px 24px rgba(37,99,235,0.55), 0 0 0 6px rgba(37,99,235,0.1); transform:scale(1.06); }
+}
+
+/* Contenu de l'étape */
+.step-content {
+  flex:1; background:white; border-radius:20px;
+  padding:22px 32px;
+  font-size:36px; font-weight:500; color:var(--p);
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);
+  position:relative; overflow:hidden;
+}
+
+/* Ligne de statut colorée sur le côté gauche */
+.step-content::before {
+  content:'';
+  position:absolute; left:0; top:0; bottom:0;
+  width:5px; border-radius:4px 0 0 4px;
+  background:linear-gradient(180deg, #2563EB, #60A5FA);
+}
+
+/* Icône check (apparaît sur les étapes une fois en place) */
+.step-check {
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(34,197,94,0.15); border:2px solid rgba(34,197,94,0.4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; color:#16A34A; flex-shrink:0;
+  opacity:0;
+}
+.step-1 .step-check { animation:checkPop 0.3s cubic-bezier(0.22,1,0.5,1) 0.78s forwards; }
+.step-2 .step-check { animation:checkPop 0.3s cubic-bezier(0.22,1,0.5,1) 1.08s forwards; }
+.step-3 .step-check { animation:checkPop 0.3s cubic-bezier(0.22,1,0.5,1) 1.38s forwards; }
+.step-4 .step-check { animation:checkPop 0.3s cubic-bezier(0.22,1,0.5,1) 1.68s forwards; }
+
+/* Tag "personnalisable" en bas du panel */
+.custom-tag {
+  display:inline-flex; align-items:center; gap:14px;
+  margin-top:36px;
+  background:rgba(37,99,235,0.1); border:1.5px solid rgba(37,99,235,0.25);
+  border-radius:60px; padding:12px 32px;
+  opacity:0;
+  animation:tagFade 0.4s ease 1.6s forwards;
+}
+.custom-tag-dot { width:10px; height:10px; background:var(--s); border-radius:50%; animation:pulseDot 1.6s ease-in-out infinite; }
+.custom-tag-text { font-size:26px; font-weight:600; color:var(--s); letter-spacing:1px; }
+
+/* =====================
+   KEYFRAMES
+   ===================== */
+@keyframes stepReveal {
+  0%   { opacity:0; transform:translateX(80px) scale(0.92); filter:blur(6px); }
+  55%  { opacity:1; transform:translateX(-6px) scale(1.01); filter:blur(0); }
+  100% { opacity:1; transform:translateX(0) scale(1); filter:blur(0); }
+}
+
+@keyframes checkPop {
+  0%   { opacity:0; transform:scale(0) rotate(-90deg); }
+  60%  { opacity:1; transform:scale(1.2) rotate(5deg); }
+  100% { opacity:1; transform:scale(1) rotate(0deg); }
+}
+
+@keyframes titlePop {
+  0%   { opacity:0; transform:translateY(-16px); filter:blur(4px); }
+  100% { opacity:1; transform:translateY(0); filter:blur(0); }
+}
+
+@keyframes tagFade {
+  0%   { opacity:0; transform:translateY(12px); }
+  100% { opacity:1; transform:translateY(0); }
+}
+
+@keyframes slideFromLeft {
+  0%   { opacity:0; transform:translateX(-220px) scale(0.93); filter:blur(8px); }
+  60%  { opacity:1; transform:translateX(10px) scale(1.01); filter:blur(0); }
+  100% { opacity:1; transform:translateX(0) scale(1); }
+}
+
+@keyframes slideFromRight {
+  0%   { opacity:0; transform:translateX(220px) scale(0.93); filter:blur(8px); }
+  60%  { opacity:1; transform:translateX(-10px) scale(1.01); filter:blur(0); }
+  100% { opacity:1; transform:translateX(0) scale(1); }
+}
+
+@keyframes badgeGlowPulse {
+  0%   { box-shadow:0 15px 30px -10px rgba(0,0,0,0.1),0 0 0 0 rgba(37,99,235,0.3); border-color:rgba(37,99,235,0.5); }
+  50%  { box-shadow:0 20px 35px -8px rgba(0,0,0,0.15),0 0 0 5px rgba(37,99,235,0.2); border-color:rgba(37,99,235,0.9); }
+  100% { box-shadow:0 15px 30px -10px rgba(0,0,0,0.1),0 0 0 0 rgba(37,99,235,0); border-color:rgba(37,99,235,0.5); }
+}
+@keyframes pulseDot {
+  0%,100% { transform:scale(1); opacity:1; box-shadow:0 0 0 0 var(--s); }
+  50%      { transform:scale(1.2); opacity:0.9; box-shadow:0 0 0 8px rgba(37,99,235,0.4); }
+}
+@keyframes textShine {
+  0%   { background-position:0% 50%; }
+  100% { background-position:200% 50%; }
+}
+@keyframes pulseGlowWord {
+  0%,100% { text-shadow:0 0 0px rgba(37,99,235,0); transform:scale(1); }
+  50%      { text-shadow:0 0 12px rgba(37,99,235,0.6); transform:scale(1.02); }
+}
+
+/* 4K */
+@media (max-width:3840px) {
+  .title { font-size:80px; }
+  .badge-text { font-size:30px; }
+  .badge-problem { padding:14px 50px; gap:20px; }
+  .left-col { gap:50px; }
+  .right-panel { flex:0 0 900px; }
+  .workflow-container { padding:50px; }
+  .step-content { font-size:32px; padding:20px 28px; }
+  .step-number { width:54px; height:54px; font-size:24px; }
+  .workflow-title { font-size:36px; }
+}
+.prog, .prog-f { display:none !important; }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+<div class="floating-line"></div><div class="floating-line floating-line2"></div>
+<div class="spark spark-1"></div><div class="spark spark-2"></div><div class="spark spark-3"></div><div class="spark spark-4"></div><div class="spark spark-5"></div>
+<div class="pulse-ring"></div>
+
+<div class="main-content">
+
+  <!-- COLONNE GAUCHE -->
+  <div class="left-col">
+    <div class="badge-problem">
+      <div class="pulse-dot"></div>
+      <span class="badge-text">VOS PROPRES RÈGLES</span>
+    </div>
+    <h1 class="title">
+      Mais surtout…<br>Définissez vos propres<br><span>workflows.</span>
+    </h1>
+  </div>
+
+  <!-- COLONNE DROITE -->
+  <div class="right-panel">
+    <div class="workflow-container">
+
+      <div class="workflow-title">Mon Workflow Transit</div>
+
+      <!-- Étape 1 -->
+      <div class="workflow-step step-1">
+        <div class="step-number">1</div>
+        <div class="step-content">Réception commande</div>
+        <div class="step-check">✓</div>
+      </div>
+
+      <!-- Étape 2 -->
+      <div class="workflow-step step-2">
+        <div class="step-number">2</div>
+        <div class="step-content">Vérification documents</div>
+        <div class="step-check">✓</div>
+      </div>
+
+      <!-- Étape 3 -->
+      <div class="workflow-step step-3">
+        <div class="step-number">3</div>
+        <div class="step-content">Dédouanement</div>
+        <div class="step-check">✓</div>
+      </div>
+
+      <!-- Étape 4 -->
+      <div class="workflow-step step-4">
+        <div class="step-number">4</div>
+        <div class="step-content">Livraison client</div>
+        <div class="step-check">✓</div>
+      </div>
+
+      <!-- Tag "personnalisable" -->
+      <div class="custom-tag">
+        <div class="custom-tag-dot"></div>
+        <span class="custom-tag-text">100% personnalisable</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
