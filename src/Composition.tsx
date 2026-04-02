@@ -120,11 +120,33 @@ export const timeline = {
 const ResponsiveSceneStage = ({ children }: { children: ReactNode }) => {
   const { width, height } = useVideoConfig();
   const isPortrait = height > width;
-  const fitScale = Math.min(width / designWidth, height / designHeight);
-  const boostedScale = isPortrait
-    ? Math.min(height / designHeight, fitScale * 1.18)
-    : fitScale;
-  const verticalOffset = isPortrait ? -height * 0.015 : 0;
+
+  if (isPortrait) {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background:
+            "radial-gradient(circle at 50% 20%, rgba(96,165,250,0.22) 0%, rgba(96,165,250,0) 45%), radial-gradient(circle at 50% 85%, rgba(30,58,138,0.18) 0%, rgba(30,58,138,0) 42%), linear-gradient(180deg, #EEF4FF 0%, #FFFFFF 100%)",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -140,10 +162,10 @@ const ResponsiveSceneStage = ({ children }: { children: ReactNode }) => {
         style={{
           position: "absolute",
           left: "50%",
-          top: `calc(50% + ${verticalOffset}px)`,
+          top: "50%",
           width: designWidth,
           height: designHeight,
-          transform: `translate(-50%, -50%) scale(${boostedScale})`,
+          transform: "translate(-50%, -50%)",
           transformOrigin: "center center",
         }}
       >
